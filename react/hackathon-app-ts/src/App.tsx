@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { CustomHeader, headerButtons, SideBarButton } from './components/layout';
 import { fireAuth } from './firebase';
@@ -6,26 +6,34 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { LoginForm } from './LoginForm';
 import { LoginLayout } from './components/loginlayout';
 
-
-function App() {
+const App = () => {
   const [loginUser, setLoginUser] = useState(fireAuth.currentUser);
 
-  // ログイン状態を監視して、stateをリアルタイムで更新する
-  onAuthStateChanged(fireAuth, user => {
-    setLoginUser(user);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(fireAuth, user => {
+      setLoginUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
 
   return (
     <>
-      <LoginLayout>
-        <LoginForm />
-        {loginUser && <div>ログインしています</div>}
-      </LoginLayout>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <SideBarButton />
-        <CustomHeader buttons={headerButtons} />
-      </div>
+      {loginUser ? (
+        // --- ログインしている場合に表示する内容 ---
+        <>
+          <SideBarButton />
+          <CustomHeader buttons={headerButtons} />
+          {/* 今後、タイムラインなどのメインコンテンツを
+            このあたりに追加していくことになります。
+          */}
+        </>
+      ) : (
+        // --- ログインしていない場合に表示する内容 ---
+        <LoginLayout>
+          <LoginForm />
+        </LoginLayout>
+      )}
     </>
   );
 }
