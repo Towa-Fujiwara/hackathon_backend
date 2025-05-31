@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { CustomHeader, headerButtons, SideBarButton } from './components/layout';
+import { CustomHeader, headerButtons, SideBarButton, sideBarButtonPath } from './components/layout';
 import { fireAuth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { LoginForm } from './LoginForm';
 import { LoginLayout } from './components/loginlayout';
+import { BrowserRouter } from 'react-router-dom';
 
 const App = () => {
   const [loginUser, setLoginUser] = useState(fireAuth.currentUser);
@@ -18,11 +19,11 @@ const App = () => {
 
 
   return (
-    <>
+    <BrowserRouter>
       {loginUser ? (
         // --- ログインしている場合に表示する内容 ---
         <>
-          <SideBarButton />
+          <SideBarButton buttons={sideBarButtonPath} />
           <CustomHeader buttons={headerButtons} />
           {/* 今後、タイムラインなどのメインコンテンツを
             このあたりに追加していくことになります。
@@ -34,7 +35,7 @@ const App = () => {
           <LoginForm />
         </LoginLayout>
       )}
-    </>
+    </BrowserRouter>
   );
 }
 

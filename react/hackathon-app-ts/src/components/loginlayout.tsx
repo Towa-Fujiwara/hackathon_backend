@@ -10,6 +10,7 @@ type LoginFormButtonProps = {
     onClick: () => void;
     label: string;
     icon: IconType;
+
 }
 
 export const LoginLayout: React.FC<LoginLayoutProps> = ({ children }) => {
