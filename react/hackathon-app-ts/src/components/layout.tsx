@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Link } from 'react-router-dom';
 
 type HeaderButtonType = {
     icon?: React.ReactNode;
@@ -9,6 +10,7 @@ type HeaderButtonType = {
 type SideBarButtonType = {
     label: string;
     onClick?: () => void;
+    path: string;
 }
 
 type SideBarProps = {
@@ -22,30 +24,21 @@ type CustomHeaderProps = {
     buttons: HeaderButtonType[];
 }
 
-export const SideBarButton = () => {
+
+
+export const SideBarButton: React.FC<{ buttons: SideBarButtonType[] }> = ({ buttons }) => {
     return (
         <SideBarContainer>
-            <SideBar top="150px" buttons={[]}>
-                ホーム
-            </SideBar>
-            <SideBar top="250px" buttons={[]}>
-                検索
-            </SideBar>
-            <SideBar top="350px" buttons={[]}>
-                通知
-            </SideBar>
-            <SideBar top="450px" buttons={[]}>
-                メッセージ
-            </SideBar>
-            <SideBar top="550px" buttons={[]}>
-                設定
-            </SideBar>
-            <SideBar top="650px" buttons={[]}>
-                プロフィール
-            </SideBar>
+            {buttons.map((button, index) => (
+                <StyledLink to={button.path} key={index}>
+                    <SideBar top={`${index * 120}px`} buttons={[]}>
+                        {button.label}
+                    </SideBar>
+                </StyledLink>
+            ))}
         </SideBarContainer>
     );
-}
+};
 
 export const CustomHeader: React.FC<CustomHeaderProps> = ({ buttons }) => {
     return (
@@ -104,17 +97,24 @@ const HeaderContainer = styled.header`
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  // 影を追加
 `;
 
+export const headerButtons: HeaderButtonType[] = [
+    { label: "おすすめ", onClick: () => console.log("Header Button 1") },
+    { label: "検索", onClick: () => console.log("Header Button 2") },
+    { label: "通知", onClick: () => console.log("Header Button 3") },
+    { label: "メッセージ", onClick: () => console.log("Header Button 4") },
+    { label: "設定", onClick: () => console.log("Header Button 5") },
+    { label: "プロフィール", onClick: () => console.log("Header Button 6") },
+];
 
 
 //サイドバー
 const SideBar = styled.button <SideBarProps>`
     height: 75px;
-    width: 160px;
+    width: 180px;
     background-color: #f0f0f0;
     padding: 10px;
     border: none;
     border-radius: 20px;
-    position: fixed;
     &:hover {
         background-color:rgb(24, 185, 226);
         color: #fff;
@@ -134,9 +134,10 @@ const SideBarContainer = styled.aside`
     width: 270px;
     display: flex;
     flex-direction: column;
-    justify-content: left;
-    align-items: left;
-    gap: 15px;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 25px;
+    margin-top: 150px;
     padding: 0;
     left: 0;
     top: 50%;
@@ -146,11 +147,18 @@ const SideBarContainer = styled.aside`
     z-index: 1000;
 `;
 
-export const headerButtons: HeaderButtonType[] = [
-    { label: "おすすめ", onClick: () => console.log("Header Button 1") },
-    { label: "検索", onClick: () => console.log("Header Button 2") },
-    { label: "通知", onClick: () => console.log("Header Button 3") },
-    { label: "メッセージ", onClick: () => console.log("Header Button 4") },
-    { label: "設定", onClick: () => console.log("Header Button 5") },
-    { label: "プロフィール", onClick: () => console.log("Header Button 6") },
+export const sideBarButtonPath: SideBarButtonType[] = [
+    { label: "ホーム", path: "/" },
+    { label: "検索", path: "/search" },
+    { label: "通知", path: "/notifications" },
+    { label: "メッセージ", path: "/messages" },
+    { label: "設定", path: "/settings" },
+    { label: "プロフィール", path: "/profile" },
 ];
+
+
+
+const StyledLink = styled(Link)`
+    text-decoration: none; /* リンクの下線を消す */
+    color: inherit; /* 親要素の色を継承する */
+`;

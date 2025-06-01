@@ -10,6 +10,7 @@ type LoginFormButtonProps = {
     onClick: () => void;
     label: string;
     icon: IconType;
+
 }
 
 export const LoginLayout: React.FC<LoginLayoutProps> = ({ children }) => {
@@ -49,11 +50,11 @@ export const LoginButton: React.FC<LoginFormButtonProps> = ({ onClick, label, ic
 };
 const StyledButton = styled.button`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    height: 100px;
-    width: 100px;
+    height: 50px;
+    width: 150px;
     background-color: #ffffff;
     border-radius: 10px;
     border: none;
