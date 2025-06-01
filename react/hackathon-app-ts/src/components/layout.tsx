@@ -110,12 +110,11 @@ export const headerButtons: HeaderButtonType[] = [
 //サイドバー
 const SideBar = styled.button <SideBarProps>`
     height: 75px;
-    width: 160px;
+    width: 180px;
     background-color: #f0f0f0;
     padding: 10px;
     border: none;
     border-radius: 20px;
-    position: fixed;
     &:hover {
         background-color:rgb(24, 185, 226);
         color: #fff;
@@ -136,8 +135,8 @@ const SideBarContainer = styled.aside`
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-items: left;
-    gap: 10px;
+    align-items: center;
+    gap: 25px;
     margin-top: 150px;
     padding: 0;
     left: 0;
