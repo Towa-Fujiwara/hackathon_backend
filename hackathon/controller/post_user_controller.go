@@ -1,0 +1,58 @@
+package controller
+
+import (
+	"net/http"
+	"hackathon/model"
+	"hackathon/usecase"
+	"github.com/go-chi/chi"
+	"log"
+)
+
+type PostController struct {
+	postUsecase usecase.PostUsecase
+}
+
+func NewPostController(pu usecase.PostUsecase) *PostController {
+	return &PostController{postUsecase: pu}
+}
+
+func (c *PostController) GetPostHandler(w http.ResponseWriter, r *http.Request) {
+	post, err := c.postUsecase.FindById(chi.URLParam(r, "postId"))
+	if err != nil {
+		log.Printf("ERROR: FindById failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, post)
+}
+
+
+func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
+	// 投稿の取得
+	posts, err := c.postUsecase.FindAllPosts()
+	if err != nil {
+		log.Printf("ERROR: FindAllPosts failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, posts)
+}
+
+// 投稿を作成する
+// POST /api/posts
+func (c *PostController) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+	// リクエストボディの読み込み
+	var post model.Post
+	if err := decodeBody(r, &post); err != nil {
+		respondJSON(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	// 投稿の作成
+	result, err := c.postUsecase.CreatePost(&post)
+	if err != nil {
+		log.Printf("ERROR: CreatePost failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusCreated, result)
+}
