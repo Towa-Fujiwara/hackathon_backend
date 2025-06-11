@@ -13,13 +13,10 @@ import (
 
 var db *sql.DB
 
-func InitDB() {
+func InitDB(dbUser, dbPwd, dbName, instanceConnectionName string) {
 	godotenv.Load()
-	mysqlUser := os.Getenv("MYSQL_USER")
-	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
-	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(hackathon-mysql:3306)/%s?parseTime=true", mysqlUser, mysqlUserPwd, mysqlDatabase)
+	dsn := fmt.Sprintf("%s:%s@unix(%s)/%s?parseTime=true", dbUser, dbPwd, instanceConnectionName, dbName)
 	_db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("fail: sql.Open, %v\n", err)
