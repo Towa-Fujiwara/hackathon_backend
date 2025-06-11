@@ -9,6 +9,7 @@ RUN go mod download
 
 COPY . .
 
+RUN ls -la
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./main.go
 
