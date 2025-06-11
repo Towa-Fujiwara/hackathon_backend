@@ -3,15 +3,11 @@ package dao
 import (
 	"database/sql"
 	"fmt"
-	"hackathon/model" // modelパッケージのインポートを追加
+	"hackathon/model" 
 )
 
-// var db *sql.DB // 重複定義なのでコメントアウト（または削除）
-
 type PostDao interface {
-    // DBから取得・スキャンして []model.Post を返す
     FindAll() ([]model.Post, error)
-    // DBにINSERTする
     Create(post *model.Post) error
 	FindById(id string) (*model.Post, error)
 	Update(post *model.Post) error
@@ -20,18 +16,16 @@ type PostDao interface {
 type postDao struct {
 	db *sql.DB
 }
-//後で変更？
+
 func NewPostDao(db *sql.DB) PostDao {
 	return &postDao{db: db}
 }
 
 //ポストIDによるポスト取得
 func (d *postDao) FindById(Id string) (*model.Post, error) {
-	// "content" を "text, image" に修正
 	row := d.db.QueryRow("SELECT id, user_id, text, image, created_at FROM post WHERE id = ?", Id)
 
 	post := &model.Post{}
-	// モデルに合わせて UserId, Text, Image に修正
 	err := row.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan post: %w", err)
@@ -42,31 +36,25 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 
 
 func (d *postDao) FindAll() ([]model.Post, error) {
-	// 投稿を取得するためのSQLクエリ（実際には定数として定義）
 	const selectPosts = "SELECT id, user_id, text, image, created_at FROM post ORDER BY created_at DESC"
 
 	rows, err := d.db.Query(selectPosts)
 	if err != nil {
-		// panic(err) の代わりに、エラーをラップして呼び出し元に返します
 		return nil, fmt.Errorf("failed to execute query for all posts: %w", err)
 	}
 	defer rows.Close()
 
-	// 投稿の一覧を格納する配列
 	var posts []model.Post
 
-	// 取得した投稿を一つずつ取りだして、配列に格納する
 	for rows.Next() {
 		var post model.Post
 		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
 		if err != nil {
-			// ここも panic ではなく、エラーを返します
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
 		posts = append(posts, post)
 	}
 
-	// ループ処理中に発生したエラーがないか最終チェックします
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("an error occurred during rows iteration: %w", err)
 	}
@@ -80,7 +68,6 @@ func (d *postDao) Create(post *model.Post) error {
 	if post == nil {
 		return fmt.Errorf("post is empty")
 	}
-	// モデルに合わせて UserId, Text に修正
 	if post.UserId == "" {
 		return fmt.Errorf("user id is not set")
 	}

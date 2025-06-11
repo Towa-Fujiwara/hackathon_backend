@@ -17,17 +17,18 @@ func NewPostLikeController(pl usecase.PostLikeUsecase) *PostLikeController {
 }
 
 func (c *PostLikeController) LikePostHandler(w http.ResponseWriter, r *http.Request) {
+	uid, ok := r.Context().Value(userContextKey).(string)
+	if !ok || uid == "" {
+		// このエラーは、ミドルウェアが正しく設定されていれば通常は発生しません。
+		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
+		return
+	}
 	postId := chi.URLParam(r, "postId")
 	if postId == "" {
         http.Error(w, "Bad Request: Post ID is required", http.StatusBadRequest)
         return
     }
-	userId, ok := r.Context().Value("userId").(string)
-	if !ok {
-		http.Error(w, "Bad Request: User ID is required", http.StatusBadRequest)
-		return
-	}
-	toggledLike, err := c.postLikeUsecase.ToggleLike(userId, postId)
+	toggledLike, err := c.postLikeUsecase.ToggleLike(uid, postId)
     if err != nil {
         log.Printf("ERROR: ToggleLike failed: %v", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)

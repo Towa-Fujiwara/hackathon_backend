@@ -12,6 +12,7 @@ type userUsecase struct {
 	userDao dao.UserDao
 }
 
+
 type UserUsecase interface {
 	RegisterUser(id, name, password, displayName, bio, iconURL, backgroundURL string, age int) (*model.User, error)
 	SearchUserExist(id string) (*model.User, error)

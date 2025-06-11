@@ -42,12 +42,18 @@ func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Reque
 // POST /api/posts
 func (c *PostController) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	// リクエストボディの読み込み
+	uid, ok := r.Context().Value(userContextKey).(string)
+	if !ok || uid == "" {
+		// このエラーは、ミドルウェアが正しく設定されていれば通常は発生しません。
+		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
+		return
+	}
 	var post model.Post
 	if err := decodeBody(r, &post); err != nil {
 		respondJSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	// 投稿の作成
+	post.UserId = uid
 	result, err := c.postUsecase.CreatePost(&post)
 	if err != nil {
 		log.Printf("ERROR: CreatePost failed: %v\n", err)
