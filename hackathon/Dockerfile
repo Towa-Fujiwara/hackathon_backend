@@ -4,10 +4,10 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /app
 
 
-COPY hackathon/go.mod hackathon/go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY hackathon/ .
+COPY . .
 
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./main.go
