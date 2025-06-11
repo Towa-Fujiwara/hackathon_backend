@@ -13,7 +13,6 @@ func NewSearchUserController(su usecase.UserUsecase) *SearchUserController {
 	return &SearchUserController{searchUserUsecase: su}
 }
 func (c *SearchUserController) SearchUsersHandler(w http.ResponseWriter, r *http.Request) {
-	// URLからユーザーIDを取
 	query := r.URL.Query().Get("q")
 	if query == "" {
 		respondJSON(w, http.StatusBadRequest, "Bad Request")

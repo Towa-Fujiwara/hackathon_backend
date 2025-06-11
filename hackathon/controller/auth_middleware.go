@@ -13,12 +13,6 @@ import (
 type contextKey string
 const userContextKey = contextKey("firebase_uid")
 
-// AuthMiddleware は、リクエストの Authorization ヘッダーからIDトークンを検証するミドルウェアを生成します。
-//
-// 使い方:
-//  authClient, _ := app.Auth(ctx)
-//  firebaseAuthMiddleware := AuthMiddleware(authClient)
-//  http.Handle("/your/protected/route", firebaseAuthMiddleware(yourHandler))
 func AuthMiddleware(authClient *auth.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		// http.HandlerFunc は、関数をhttp.Handlerに変換するアダプターです。
@@ -47,12 +41,9 @@ func AuthMiddleware(authClient *auth.Client) func(http.Handler) http.Handler {
 				return
 			}
 
-			// 検証成功後、トークンからUID（ユーザーID）を取得します。
-			// このUIDをリクエストコンテキストに保存します。
 			ctx := context.WithValue(r.Context(), userContextKey, token.UID)
 
-			// 元のリクエスト(r)の代わりに、UIDを含む新しいコンテキストを持つリクエストを
-			// 次のハンドラに渡します。
+
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

@@ -28,7 +28,7 @@ func (c *PostController) GetPostHandler(w http.ResponseWriter, r *http.Request) 
 
 
 func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
-	// 投稿の取得
+
 	posts, err := c.postUsecase.FindAllPosts()
 	if err != nil {
 		log.Printf("ERROR: FindAllPosts failed: %v\n", err)
@@ -38,13 +38,9 @@ func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Reque
 	respondJSON(w, http.StatusOK, posts)
 }
 
-// 投稿を作成する
-// POST /api/posts
 func (c *PostController) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-	// リクエストボディの読み込み
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
-		// このエラーは、ミドルウェアが正しく設定されていれば通常は発生しません。
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
 		return
 	}

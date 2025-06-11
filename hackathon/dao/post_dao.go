@@ -21,9 +21,8 @@ func NewPostDao(db *sql.DB) PostDao {
 	return &postDao{db: db}
 }
 
-//ポストIDによるポスト取得
 func (d *postDao) FindById(Id string) (*model.Post, error) {
-	row := d.db.QueryRow("SELECT id, user_id, text, image, created_at FROM post WHERE id = ?", Id)
+	row := d.db.QueryRow("SELECT id, user_id, text, image, created_at FROM posts WHERE id = ?", Id)
 
 	post := &model.Post{}
 	err := row.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
@@ -36,7 +35,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 
 
 func (d *postDao) FindAll() ([]model.Post, error) {
-	const selectPosts = "SELECT id, user_id, text, image, created_at FROM post ORDER BY created_at DESC"
+	const selectPosts = "SELECT id, user_id, text, image, created_at FROM posts ORDER BY created_at DESC"
 
 	rows, err := d.db.Query(selectPosts)
 	if err != nil {
@@ -62,8 +61,6 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 	return posts, nil
 }
 
-
-//ポスト作成
 func (d *postDao) Create(post *model.Post) error {
 	if post == nil {
 		return fmt.Errorf("post is empty")
@@ -71,7 +68,7 @@ func (d *postDao) Create(post *model.Post) error {
 	if post.UserId == "" {
 		return fmt.Errorf("user id is not set")
 	}
-	_, err := d.db.Exec("INSERT INTO post (id, user_id, text, image, created_at) VALUES (?, ?, ?, ?, ?)",
+	_, err := d.db.Exec("INSERT INTO posts (id, user_id, text, image, created_at) VALUES (?, ?, ?, ?, ?)",
 		post.Id, post.UserId, post.Text, post.Image, post.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create post: %w", err)
@@ -79,22 +76,20 @@ func (d *postDao) Create(post *model.Post) error {
 	return nil
 }
 
-//ポスト更新
 func (d *postDao) Update(post *model.Post) error {
 	if post == nil {
 		return fmt.Errorf("post is empty")
 	}
-	_, err := d.db.Exec("UPDATE post SET text = ?, image = ? WHERE id = ?", post.Text, post.Image, post.Id)
+	_, err := d.db.Exec("UPDATE posts SET text = ?, image = ? WHERE id = ?", post.Text, post.Image, post.Id)
 	if err != nil {
 		return fmt.Errorf("failed to update post: %w", err)
 	}
 	return nil
 }
 
-//ポスト削除
 func (d *postDao) Delete(Id string) error {
 
-	result, err := d.db.Exec("DELETE FROM post WHERE id = ?", Id)
+	result, err := d.db.Exec("DELETE FROM posts WHERE id = ?", Id)
 	if err != nil {
 		return fmt.Errorf("failed to delete post: %w", err)
 	}

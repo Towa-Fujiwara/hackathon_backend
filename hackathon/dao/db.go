@@ -11,17 +11,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// db変数の宣言をこのファイルに集約
 var db *sql.DB
 
-// DB接続処理もこのファイルに集約
 func InitDB() {
 	godotenv.Load()
 	mysqlUser := os.Getenv("MYSQL_USER")
 	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s?parseTime=true", mysqlUser, mysqlUserPwd, mysqlDatabase)
+	dsn := fmt.Sprintf("%s:%s@tcp(hackathon-mysql:3306)/%s?parseTime=true", mysqlUser, mysqlUserPwd, mysqlDatabase)
 	_db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("fail: sql.Open, %v\n", err)

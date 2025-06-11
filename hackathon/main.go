@@ -10,6 +10,8 @@ import (
 	"google.golang.org/api/option"
 	"context"
 	"log"
+
+	"github.com/go-chi/chi"
 )
 
 
@@ -64,22 +66,26 @@ func main() {
 	followUserController := controller.NewFollowUserController(followUserUsecase)
 
 	// ルーティングの設定
+	r := chi.NewRouter()
 
 	firebaseAuthMiddleware := controller.AuthMiddleware(authClient)
 
-	http.HandleFunc("/api/users/", registerUserController.RegisterUserHandler) 
-	http.HandleFunc("/api/search/", searchUserController.SearchUsersHandler)
-	http.HandleFunc("GET /api/posts/", postController.GetAllPostsHandler)
+	r.Get("/api/users/", registerUserController.RegisterUserHandler) 
+	r.Get("/api/search/", searchUserController.SearchUsersHandler)
+	r.Get("/api/posts/", postController.GetAllPostsHandler)
 
 	// 認証が必要なエンドポイント
-	// ミドルウェアでラップするために http.Handle を使用します
-	http.Handle("POST /api/posts/", firebaseAuthMiddleware(http.HandlerFunc(postController.CreatePostHandler)))
-	http.Handle("POST /api/posts/{postId}/comments", firebaseAuthMiddleware(http.HandlerFunc(commentController.CreateCommentHandler)))
-	http.Handle("POST /api/users/{userId}/follow", firebaseAuthMiddleware(http.HandlerFunc(followUserController.FollowUserHandler)))
-	http.Handle("GET /api/users/{userId}/followers", firebaseAuthMiddleware(http.HandlerFunc(followUserController.GetFollowersHandler)))
-	http.Handle("GET /api/users/{userId}/following", firebaseAuthMiddleware(http.HandlerFunc(followUserController.GetFollowingHandler)))
-	http.Handle("GET /api/users/{userId}/is-following", firebaseAuthMiddleware(http.HandlerFunc(followUserController.IsFollowingHandler)))
+	r.Group(func(r chi.Router) {	
+		r.Use(firebaseAuthMiddleware)
+		r.Post("/api/posts/", postController.CreatePostHandler)
+		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
+		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)
+		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
+		r.Get("/api/users/{userId}/following", followUserController.GetFollowingHandler)
+		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)
+	})
+
 	// サーバーの起動、ポート番号は8080
 	fmt.Println("http://localhost:8080 でサーバーを起動します")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", r)
 }

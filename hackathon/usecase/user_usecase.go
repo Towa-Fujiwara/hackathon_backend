@@ -14,7 +14,7 @@ type userUsecase struct {
 
 
 type UserUsecase interface {
-	RegisterUser(id, name, password, displayName, bio, iconURL, backgroundURL string, age int) (*model.User, error)
+	RegisterUser(id, name, password, displayName, bio, iconURL string, age int) (*model.User, error)
 	SearchUserExist(id string) (*model.User, error)
 	SearchUsers(query string) ([]model.User, error)
 }
@@ -26,9 +26,9 @@ func NewUserUsecase(userDao dao.UserDao) *userUsecase {
 
 // RegisterUser はユーザーを登録するビジネスロジックです。
 // 引数を、model.UserProfileの定義に合わせて修正しました。
-func (uc *userUsecase) RegisterUser(id, name, password, displayName, bio, iconURL, backgroundURL string, age int) (*model.User, error) {
+func (uc *userUsecase) RegisterUser(id, name, password, displayName, bio, iconURL string, age int) (*model.User, error) {
 	
-	user, err := model.NewUser(id, name, password, displayName, bio, iconURL, backgroundURL, age)
+	user, err := model.NewUser(id, name, password, displayName, bio, iconURL, age)
 	if err != nil {
 		return nil, err
 	}

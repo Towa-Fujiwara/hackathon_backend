@@ -17,12 +17,11 @@ type UserProfile struct {
 	IconUrl string `json:"icon_url"`
 	DisplayName string `json:"display_name"`
 	Bio string `json:"bio"`
-	BackgroundImageUrl string `json:"background_image_url"`
 }
 
-func NewUser(id, name, password, displayName, bio, iconURL, backgroundURL string, age int) (*User, error) {
+
+func NewUser(id, name, password, displayName, bio, iconURL string, age int) (*User, error) {
     
-    // バリデーション
     if id == "" {
         return nil, fmt.Errorf("id is empty")
     }
@@ -36,17 +35,15 @@ func NewUser(id, name, password, displayName, bio, iconURL, backgroundURL string
         return nil, fmt.Errorf("password is empty")
     }
 
-    // バリデーションが通ったら、受け取ったIDを使ってインスタンスを生成
     return &User{
-        Id:       id, // 引数のidを設定
+        Id:       id,
         Name:     name,
         Age:      age,
-        Password: password, // 注意: パスワードはハッシュ化すべき
+        Password: password,
         Profile: UserProfile{
             DisplayName:        displayName,
             Bio:                bio,
             IconUrl:            iconURL,
-            BackgroundImageUrl: backgroundURL,
         },
 		CreatedAt: time.Now(), 
     }, nil
