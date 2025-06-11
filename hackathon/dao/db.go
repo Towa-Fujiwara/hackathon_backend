@@ -14,9 +14,11 @@ import (
 var db *sql.DB
 
 func InitDB(dbUser, dbPwd, dbName, instanceConnectionName string) {
-	godotenv.Load()
-
-	dsn := fmt.Sprintf("%s:%s@unix(%s)/%s?parseTime=true", dbUser, dbPwd, instanceConnectionName, dbName)
+	socketDir, isSet := os.LookupEnv("DB_SOCKET_DIR")
+    if !isSet {
+        socketDir = "/cloudsql"
+    }
+	dsn := fmt.Sprintf("%s:%s@unix(%s/%s)/%s?parseTime=true", dbUser, dbPwd, socketDir, instanceConnectionName, dbName)
 	_db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("fail: sql.Open, %v\n", err)
