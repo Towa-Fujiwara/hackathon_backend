@@ -10,7 +10,7 @@ RUN go mod download
 COPY hackathon/ .
 
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./hackathon/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./main.go
 
 
 FROM alpine:latest
@@ -22,7 +22,7 @@ WORKDIR /app
 COPY --from=builder /app/server .
 
 
-COPY ./hackathon/serviceAccountKey.json ./hackathon/serviceAccountKey.json
+COPY --from=builder /app/serviceAccountKey.json .
 
 
 EXPOSE 8080
