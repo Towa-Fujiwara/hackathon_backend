@@ -48,7 +48,11 @@ func main() {
 		log.Fatalf("error getting Auth client: %v\n", err)
 	}
 
-	dao.InitDB()
+	dbUser := os.Getenv("DB_USER")
+	dbPwd := os.Getenv("DB_PASS")
+	dbName := os.Getenv("DB_NAME")
+	instanceConnectionName := os.Getenv("INSTANCE_CONNECTION_NAME")
+	dao.InitDB(dbUser, dbPwd, dbName, instanceConnectionName)
 	postDao := dao.NewPostDao(dao.DB())
 	postUsecase := usecase.NewPostUsecase(postDao)
 	postController := controller.NewPostController(postUsecase)
