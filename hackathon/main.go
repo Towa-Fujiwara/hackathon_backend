@@ -37,7 +37,7 @@ const (
 // main関数は、プログラムのエントリーポイント、init()関数の実行後に実行される
 func main() {
 	ctx := context.Background()
-	opt := option.WithCredentialsFile("hackathon/serviceAccountKey.json")
+	opt := option.WithCredentialsFile("serviceAccountKey.json")
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
