@@ -12,6 +12,7 @@ type PostDao interface {
 	FindById(id string) (*model.Post, error)
 	Update(post *model.Post) error
 	Delete(id string) error
+	FindAllByUserId(uid string) ([]model.Post, error)
 }
 type postDao struct {
 	db *sql.DB
@@ -35,6 +36,33 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 
 
 func (d *postDao) FindAll() ([]model.Post, error) {
+	const selectPosts = "SELECT id, user_id, text, image, created_at FROM posts ORDER BY created_at DESC"
+
+	rows, err := d.db.Query(selectPosts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query for all posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []model.Post
+
+	for rows.Next() {
+		var post model.Post
+		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan post row: %w", err)
+		}
+		posts = append(posts, post)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("an error occurred during rows iteration: %w", err)
+	}
+
+	return posts, nil
+}
+
+func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 	const selectPosts = "SELECT id, user_id, text, image, created_at FROM posts ORDER BY created_at DESC"
 
 	rows, err := d.db.Query(selectPosts)

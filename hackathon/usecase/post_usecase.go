@@ -11,6 +11,7 @@ type PostUsecase interface {
 	FindAllPosts() ([]model.Post, error)
 	CreatePost(post *model.Post) (*model.Post, error)
 	FindById(id string) (*model.Post, error)
+	FindAllPostsByUserId(uid string) ([]model.Post, error)
 }
 
 type postUsecase struct {
@@ -25,6 +26,10 @@ func NewPostUsecase(pd dao.PostDao) PostUsecase {
 func (u *postUsecase) FindAllPosts() ([]model.Post, error) {
 	// 対応するDAOのメソッドを呼び出します
 	return u.postDAO.FindAll()
+}
+
+func (u *postUsecase) FindAllPostsByUserId(uid string) ([]model.Post, error) {
+	return u.postDAO.FindAllByUserId(uid)
 }
 
 func (u *postUsecase) CreatePost(post *model.Post) (*model.Post, error) {

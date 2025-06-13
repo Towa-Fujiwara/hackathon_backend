@@ -38,6 +38,24 @@ func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Reque
 	respondJSON(w, http.StatusOK, posts)
 }
 
+
+func (c *PostController) GetAllPostsByUserIdHandler(w http.ResponseWriter, r *http.Request) {
+	uid, ok := r.Context().Value(userContextKey).(string)
+	if !ok || uid == "" {
+		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
+		return
+	}
+
+	posts, err := c.postUsecase.FindAllPostsByUserId(uid)
+	if err != nil {
+		log.Printf("ERROR: FindAllPostsByUserId failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, posts)
+}
+
+
 func (c *PostController) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
