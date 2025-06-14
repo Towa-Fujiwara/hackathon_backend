@@ -9,6 +9,7 @@ import (
 
 type UserDao interface {
 	FindById(id string) (*model.User, error)
+	FindByFirebaseUID(firebaseUID string) (*model.User, error)
 	Create(user *model.User) error
 	SearchByName(query string) ([]model.User, error)
 }
@@ -19,6 +20,19 @@ type userDao struct {
 
 func NewUserDao(db *sql.DB) UserDao {
 	return &userDao{db: db}
+}
+
+func (d *userDao) FindByFirebaseUID(firebaseUID string) (*model.User, error) {
+	row := d.db.QueryRow("SELECT userId, firebaseUid, name, bio, iconUrl FROM users WHERE firebaseUid = ?", firebaseUID)
+	user := &model.User{}
+	err := row.Scan(&user.UserId, &user.FirebaseUID, &user.Name, &user.Bio, &user.IconUrl)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to scan user: %w", err)
+	}
+	return user, nil
 }
 
 func (d *userDao) FindById(Id string) (*model.User, error) {

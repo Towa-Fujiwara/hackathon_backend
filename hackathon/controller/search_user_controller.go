@@ -20,7 +20,7 @@ func (c *SearchUserController) GetUserProfileHandler(w http.ResponseWriter, r *h
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
 		return
 	}
-	user, err := c.searchUserUsecase.SearchUserExist(uid)
+	user, err := c.searchUserUsecase.GetUserByFirebaseUID(uid)
 	if err != nil {
 		log.Printf("ERROR: SearchUserExist failed: %v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

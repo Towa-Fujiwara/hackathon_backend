@@ -15,7 +15,7 @@ type userUsecase struct {
 
 type UserUsecase interface {
 	RegisterUser(userId, firebaseUID, name, bio, iconURL string) (*model.User, error)
-	SearchUserExist(userId string) (*model.User, error)
+	GetUserByFirebaseUID(firebaseUID string) (*model.User, error)
 	SearchUsers(query string) ([]model.User, error)
 }
 
@@ -39,15 +39,13 @@ func (uc *userUsecase) RegisterUser(userId, firebaseUID, name, bio, iconURL stri
 	return user, nil
 }
 
-func (uc *userUsecase) SearchUserExist(userId string) (*model.User, error) {
-	if userId == "" {
-		return nil, fmt.Errorf("userId is empty")
+func (uc *userUsecase) GetUserByFirebaseUID(firebaseUID string) (*model.User, error) {
+	if firebaseUID == "" {
+		return nil, fmt.Errorf("firebaseUID is empty")
 	}
-
-	// 構造体が持つuserDaoのメソッドを呼び出します。
-	user, err := uc.userDao.FindById(userId)
+	user, err := uc.userDao.FindByFirebaseUID(firebaseUID)
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 	return user, nil
 }
