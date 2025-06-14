@@ -9,6 +9,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
             "http://localhost:5173",
             "http://localhost:3000",
 			"https://hackathon-frontend-one-khaki.vercel.app",
+			"https://hackathon-frontend-4v9hpfsev-towa-fujiwaras-projects.vercel.app",
         }
         
         origin := r.Header.Get("Origin")
