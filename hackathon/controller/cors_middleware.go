@@ -4,12 +4,11 @@ import "net/http"
 
 func CorsMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        // 許可するオリジンを設定
         allowedOrigins := []string{
             "http://localhost:5173",
             "http://localhost:3000",
 			"https://hackathon-frontend-one-khaki.vercel.app",
-			"https://hackathon-frontend-4v9hpfsev-towa-fujiwaras-projects.vercel.app",
+			"https://hackathon-frontend-4ws2075hc-towa-fujiwaras-projects.vercel.app",
         }
         
         origin := r.Header.Get("Origin")
@@ -24,7 +23,6 @@ func CorsMiddleware(next http.Handler) http.Handler {
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
         w.Header().Set("Access-Control-Allow-Credentials", "true")
         
-        // OPTIONSリクエスト（プリフライト）の処理
         if r.Method == "OPTIONS" {
             w.WriteHeader(http.StatusOK)
             return
