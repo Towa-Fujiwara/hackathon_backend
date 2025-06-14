@@ -22,10 +22,10 @@ func NewUserDao(db *sql.DB) UserDao {
 }
 
 func (d *userDao) FindById(Id string) (*model.User, error) {
-	row := d.db.QueryRow("SELECT userId, name, bio, iconUrl FROM users WHERE userId = ?", Id)
+	row := d.db.QueryRow("SELECT userId, firebaseUid, name, bio, iconUrl FROM users WHERE userId = ?", Id)
 	
 	user := &model.User{}
-	err := row.Scan(&user.UserId, &user.Name, &user.Bio, &user.IconUrl)
+	err := row.Scan(&user.UserId, &user.FirebaseUID, &user.Name, &user.Bio, &user.IconUrl)
 	if err != nil {
 		if err == sql.ErrNoRows{
 			return nil, nil
@@ -38,8 +38,9 @@ func (d *userDao) FindById(Id string) (*model.User, error) {
 
 func (d *userDao) Create(user *model.User) error {
 	_, err := d.db.Exec(
-		"INSERT INTO users (userId, name, bio, iconUrl, createdAt) VALUES (?, ?, ?, ?, ?)",
+		"INSERT INTO users (userId, firebaseUid, name, bio, iconUrl, createdAt) VALUES (?, ?, ?, ?, ?, ?)",
 		user.UserId,
+		user.FirebaseUID,
 		user.Name,
 		user.Bio,
 		user.IconUrl,
@@ -55,7 +56,7 @@ func (d *userDao) Create(user *model.User) error {
 func (d *userDao) SearchByName(query string) ([]model.User, error) {
 	query = "%" + query + "%"
 
-	SQL := "SELECT userId, name, bio, iconUrl FROM users WHERE name LIKE ?"
+	SQL := "SELECT userId, firebaseUid, name, bio, iconUrl FROM users WHERE name LIKE ?"
 	rows, err := d.db.Query(SQL, query)
 	if err != nil {
 		log.Printf("ERROR: Failed to search users: %v", err)
@@ -66,7 +67,7 @@ func (d *userDao) SearchByName(query string) ([]model.User, error) {
 	var users []model.User
 	for rows.Next() {
 		var user model.User
-		err := rows.Scan(&user.UserId, &user.Name, &user.Bio, &user.IconUrl)
+		err := rows.Scan(&user.UserId, &user.FirebaseUID, &user.Name, &user.Bio, &user.IconUrl)
 		if err != nil {
 			log.Printf("ERROR: Failed to scan user: %v", err)
 		}

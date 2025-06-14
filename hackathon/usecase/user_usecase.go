@@ -14,7 +14,7 @@ type userUsecase struct {
 
 
 type UserUsecase interface {
-	RegisterUser(userId, name, bio, iconURL string) (*model.User, error)
+	RegisterUser(userId, firebaseUID, name, bio, iconURL string) (*model.User, error)
 	SearchUserExist(userId string) (*model.User, error)
 	SearchUsers(query string) ([]model.User, error)
 }
@@ -25,9 +25,9 @@ func NewUserUsecase(userDao dao.UserDao) *userUsecase {
 }
 
 
-func (uc *userUsecase) RegisterUser(userId, name, bio, iconURL string) (*model.User, error) {
+func (uc *userUsecase) RegisterUser(userId, firebaseUID, name, bio, iconURL string) (*model.User, error) {
 	
-	user, err := model.NewUser(userId, name, bio, iconURL)
+	user, err := model.NewUser(userId, firebaseUID, name, bio, iconURL)
 	if err != nil {
 		return nil, err
 	}

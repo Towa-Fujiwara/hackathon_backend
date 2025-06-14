@@ -1,5 +1,6 @@
 CREATE TABLE users (
                        userId VARCHAR(50) PRIMARY KEY,
+                       firebaseUid VARCHAR(50) NOT NULL UNIQUE,
                        name VARCHAR(50) NOT NULL UNIQUE,
                        bio TEXT,
                        iconUrl TEXT,
