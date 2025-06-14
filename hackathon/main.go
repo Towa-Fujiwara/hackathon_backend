@@ -72,9 +72,9 @@ func main() {
 	r.Use(controller.CorsMiddleware)
     firebaseAuthMiddleware := controller.AuthMiddleware(authClient)
 
-	r.Post("/api/users/", registerUserController.RegisterUserHandler) 
-	r.Get("/api/search/", searchUserController.SearchUsersHandler)
-	r.Get("/api/posts/", postController.GetAllPostsHandler)
+	r.Post("/api/users", registerUserController.RegisterUserHandler) 
+	r.Get("/api/search", searchUserController.SearchUsersHandler)
+	r.Get("/api/posts", postController.GetAllPostsHandler)
 
 
 	r.Group(func(r chi.Router) {	
@@ -82,7 +82,7 @@ func main() {
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
 		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler)      
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
-		r.Post("/api/posts/", postController.CreatePostHandler)
+		r.Post("/api/posts", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
 		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)
 		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
