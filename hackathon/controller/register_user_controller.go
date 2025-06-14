@@ -29,13 +29,13 @@ func (c *RegisterUserController) RegisterUserHandler(w http.ResponseWriter, r *h
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	row, err := c.registerUserUsecase.RegisterUser(user.Id, user.Name, user.Profile.Bio, user.Profile.IconUrl); 
+	row, err := c.registerUserUsecase.RegisterUser(user.UserId, user.Name, user.Bio, user.IconUrl); 
 	if err != nil {
 		log.Printf("fail: registerUserUsecase.RegisterUser, %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	respondJSON(w, http.StatusCreated, map[string]string{"id": row.Id})
+	respondJSON(w, http.StatusCreated, map[string]string{"userId": row.UserId})
 }
 
 

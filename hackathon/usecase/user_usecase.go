@@ -14,8 +14,8 @@ type userUsecase struct {
 
 
 type UserUsecase interface {
-	RegisterUser(id, name, bio, iconURL string) (*model.User, error)
-	SearchUserExist(id string) (*model.User, error)
+	RegisterUser(userId, name, bio, iconURL string) (*model.User, error)
+	SearchUserExist(userId string) (*model.User, error)
 	SearchUsers(query string) ([]model.User, error)
 }
 
@@ -25,9 +25,9 @@ func NewUserUsecase(userDao dao.UserDao) *userUsecase {
 }
 
 
-func (uc *userUsecase) RegisterUser(id, name, bio, iconURL string) (*model.User, error) {
+func (uc *userUsecase) RegisterUser(userId, name, bio, iconURL string) (*model.User, error) {
 	
-	user, err := model.NewUser(id, name, bio, iconURL)
+	user, err := model.NewUser(userId, name, bio, iconURL)
 	if err != nil {
 		return nil, err
 	}
@@ -39,13 +39,13 @@ func (uc *userUsecase) RegisterUser(id, name, bio, iconURL string) (*model.User,
 	return user, nil
 }
 
-func (uc *userUsecase) SearchUserExist(id string) (*model.User, error) {
-	if id == "" {
-		return nil, fmt.Errorf("id is empty")
+func (uc *userUsecase) SearchUserExist(userId string) (*model.User, error) {
+	if userId == "" {
+		return nil, fmt.Errorf("userId is empty")
 	}
 
 	// 構造体が持つuserDaoのメソッドを呼び出します。
-	user, err := uc.userDao.FindById(id)
+	user, err := uc.userDao.FindById(userId)
 	if err != nil {
 		return nil, err 
 	}

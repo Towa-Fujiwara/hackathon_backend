@@ -21,20 +21,20 @@ func NewFollowUserDao(db *sql.DB) FollowUserDao {
 }
 
 func (f *followDao) FollowUser(follow *model.Follow) error {
-	query := "INSERT INTO follows (id, user_id, follow_user_id, created_at) VALUES (?, ?, ?, ?)"
+	query := "INSERT INTO follows (id, userId, followUserId, createdAt) VALUES (?, ?, ?, ?)"
 	_, err := f.db.Exec(query, follow.Id, follow.UserId, follow.FollowUserId, follow.CreatedAt)
 	return err
 }
 
 func (f *followDao) IsFollowing(userId, followUserId string) (bool, error) {
-	query := "SELECT COUNT(*) FROM follows WHERE user_id = ? AND follow_user_id = ?"
+	query := "SELECT COUNT(*) FROM follows WHERE userId = ? AND followUserId = ?"
 	var count int
 	err := f.db.QueryRow(query, userId, followUserId).Scan(&count)
 	return count > 0, err
 }
 
 func (f *followDao) GetFollowers(userId string) ([]model.Follow, error) {
-	query := "SELECT * FROM follows WHERE follow_user_id = ?"
+	query := "SELECT * FROM follows WHERE followUserId = ?"
 	rows, err := f.db.Query(query, userId)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (f *followDao) GetFollowers(userId string) ([]model.Follow, error) {
 }
 
 func (f *followDao) GetFollowing(userId string) ([]model.Follow, error) {
-	query := "SELECT * FROM follows WHERE user_id = ?"
+	query := "SELECT * FROM follows WHERE userId = ?"
 	rows, err := f.db.Query(query, userId)
 	if err != nil {
 		return nil, err

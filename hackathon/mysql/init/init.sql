@@ -1,44 +1,44 @@
 CREATE TABLE users (
-                       id VARCHAR(50) PRIMARY KEY,
+                       userId VARCHAR(50) PRIMARY KEY,
                        name VARCHAR(50) NOT NULL UNIQUE,
                        bio TEXT,
-                       icon_url TEXT,
-                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                       iconUrl TEXT,
+                       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE posts (
                        id VARCHAR(50) PRIMARY KEY,
-                       user_id VARCHAR(50) NOT NULL,
+                       userId VARCHAR(50) NOT NULL,
                        text TEXT NOT NULL,
                        image TEXT,
-                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                       FOREIGN KEY (user_id) REFERENCES users(id)
+                       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                       FOREIGN KEY (userId) REFERENCES users(userId)
 );
 
 CREATE TABLE likes (
                        id VARCHAR(50) PRIMARY KEY,
-                       user_id VARCHAR(50) NOT NULL,
-                       post_id VARCHAR(50) NOT NULL,
-                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                       FOREIGN KEY (user_id) REFERENCES users(id),
-                       FOREIGN KEY (post_id) REFERENCES posts(id)
+                       userId VARCHAR(50) NOT NULL,
+                       postId VARCHAR(50) NOT NULL,
+                       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                       FOREIGN KEY (userId) REFERENCES users(userId),
+                       FOREIGN KEY (postId) REFERENCES posts(id)
 );
 
 CREATE TABLE comments (
                           id VARCHAR(50) PRIMARY KEY,
-                          user_id VARCHAR(50) NOT NULL,
-                          post_id VARCHAR(50) NOT NULL,
+                          userId VARCHAR(50) NOT NULL,
+                          postId VARCHAR(50) NOT NULL,
                           text TEXT NOT NULL,
-                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                          FOREIGN KEY (user_id) REFERENCES users(id),
-                          FOREIGN KEY (post_id) REFERENCES posts(id)
+                          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                          FOREIGN KEY (userId) REFERENCES users(userId),
+                          FOREIGN KEY (postId) REFERENCES posts(id)
 );
 
 CREATE TABLE follows (
                          id VARCHAR(50) PRIMARY KEY,
-                         user_id VARCHAR(50) NOT NULL,
-                         follow_user_id VARCHAR(50) NOT NULL,
-                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                         FOREIGN KEY (user_id) REFERENCES users(id),
-                         FOREIGN KEY (follow_user_id) REFERENCES users(id)
+                         userId VARCHAR(50) NOT NULL,
+                         followUserId VARCHAR(50) NOT NULL,
+                         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                         FOREIGN KEY (userId) REFERENCES users(userId),
+                         FOREIGN KEY (followUserId) REFERENCES users(userId)
 );

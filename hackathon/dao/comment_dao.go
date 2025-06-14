@@ -20,7 +20,7 @@ func NewCommentDao(db *sql.DB) CommentDao {
 }
 
 func (c *commentDao) CreateComment(comment *model.Comment) error {
-	query := "INSERT INTO comments (id, post_id, user_id, text, created_at) VALUES (?, ?, ?, ?, ?)"
+	query := "INSERT INTO comments (id, postId, userId, text, createdAt) VALUES (?, ?, ?, ?, ?)"
 	_, err := c.db.Exec(query, comment.Id, comment.PostId, comment.UserId, comment.Text, comment.CreatedAt)
 	return err
 }
@@ -28,7 +28,7 @@ func (c *commentDao) CreateComment(comment *model.Comment) error {
 func (c *commentDao) GetCommentsByPostId(postId string) ([]model.Comment, error) {
 	query := "%" + postId + "%"
 
-	SQL := "SELECT id, post_id, user_id, text, created_at FROM comments WHERE post_id LIKE ?"
+	SQL := "SELECT id, postId, userId, text, createdAt FROM comments WHERE postId LIKE ?"
 	rows, err := c.db.Query(SQL, query)
 	if err != nil {
 		log.Printf("ERROR: Failed to search users: %v", err)

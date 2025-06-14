@@ -20,7 +20,7 @@ func NewLikeDao(db *sql.DB) LikeDao {
 	return &likeDao{db: db}
 }
 func (d *likeDao) FindById(userId string, postId string) (*model.Like, error) {
-	row := d.db.QueryRow("SELECT id, user_id, post_id, created_at FROM likes WHERE user_id = ? AND post_id = ?", userId, postId)
+	row := d.db.QueryRow("SELECT id, userId, postId, createdAt FROM likes WHERE userId = ? AND postId = ?", userId, postId)
 	var like model.Like
 	if err := row.Scan(&like.Id, &like.UserId, &like.PostId, &like.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
@@ -32,7 +32,7 @@ func (d *likeDao) FindById(userId string, postId string) (*model.Like, error) {
 }
 
 func (d *likeDao) Create(like *model.Like) error {
-	_, err := d.db.Exec("INSERT INTO likes (id, user_id, post_id, created_at) VALUES (?, ?, ?, ?)",
+	_, err := d.db.Exec("INSERT INTO likes (id, userId, postId, createdAt) VALUES (?, ?, ?, ?)",
 		like.Id, like.UserId, like.PostId, like.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create like: %w", err)

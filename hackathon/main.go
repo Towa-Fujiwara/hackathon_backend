@@ -19,17 +19,17 @@ const (
 	createPostTable = `
 		CREATE TABLE IF NOT EXISTS posts (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			user_id TEXT,
+			userId TEXT,
 			text TEXT,
 			image TEXT,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`
 
-	insertPost = "INSERT INTO posts (user_id, text, image, created_at) VALUES (?, ?, ?, ?)"
+	insertPost = "INSERT INTO posts (userId, text, image, createdAt) VALUES (?, ?, ?, ?)"
 
 
-	selectPosts = "SELECT * FROM posts ORDER BY created_at DESC"
+	selectPosts = "SELECT * FROM posts ORDER BY createdAt DESC"
 )
 
 func main() {

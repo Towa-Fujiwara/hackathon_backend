@@ -7,19 +7,19 @@ import (
 
 type Post struct {
 	Id        string    `json:"id"`
-	UserId    string    `json:"user_id"`
+	UserId    string    `json:"userId"`
 	Text string `json:"text"`
 	Image string `json:"image"`
-	CreatedAt time.Time `json:"created_at"`
-	LikeCount    int       `json:"like_count"`
-	CommentCount int       `json:"comment_count"`
+	CreatedAt time.Time `json:"createdAt"`
+	LikeCount    int       `json:"likeCount"`
+	CommentCount int       `json:"commentCount"`
 }
 
 
 type Comment struct {
     Id        string    `json:"id"`
-    UserId    string    `json:"user_id"`
-    PostId    string    `json:"post_id"`
+    UserId    string    `json:"userId"`
+    PostId    string    `json:"postId"`
     Text      string    `json:"text"`
-    CreatedAt time.Time `json:"created_at"`
+    CreatedAt time.Time `json:"createdAt"`
 }

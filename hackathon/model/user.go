@@ -6,33 +6,28 @@ import (
 )
 
 type User struct {
-	Id      string      `json:"id"`
-	Name    string      `json:"name"`
-	Profile UserProfile `json:"profile"`
-	CreatedAt time.Time `json:"created_at"`
-}
-type UserProfile struct {
-	IconUrl string `json:"icon_url"`
-	Bio string `json:"bio"`
+    UserId   string `json:"userId"`
+    Name string `json:"name"`
+    Bio      string `json:"bio"`
+    IconUrl  string `json:"iconUrl"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 
-func NewUser(id, name, bio, iconURL string) (*User, error) {
+func NewUser(userId, name, bio, iconURL string) (*User, error) {
     
-    if id == "" {
-        return nil, fmt.Errorf("id is empty")
+    if userId == "" {
+        return nil, fmt.Errorf("ID is empty")
     }
     if name == "" || len(name) > 50 {
         return nil, fmt.Errorf("invalid name: %s", name)
     }
 
     return &User{
-        Id:       id,
-        Name:     name,
-        Profile: UserProfile{
-            Bio:                bio,
-            IconUrl:            iconURL,
-        },
+		UserId:   userId,
+		Name:     name,
+		Bio:      bio,
+		IconUrl:  iconURL,
 		CreatedAt: time.Now(), 
     }, nil
 }
