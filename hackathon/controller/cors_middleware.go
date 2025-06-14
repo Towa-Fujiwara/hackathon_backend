@@ -4,6 +4,8 @@ import "net/http"
 
 func CorsMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Request Origin: %s", r.Header.Get("Origin"))
+        log.Printf("Request Method: %s", r.Method)
         allowedOrigins := []string{
             "http://localhost:5173",
             "http://localhost:3000",
