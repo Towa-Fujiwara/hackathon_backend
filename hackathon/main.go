@@ -27,14 +27,12 @@ const (
 		)
 	`
 
-	// 投稿の作成を行うSQL文
 	insertPost = "INSERT INTO posts (user_id, text, image, created_at) VALUES (?, ?, ?, ?)"
 
-	// 投稿の取得を行うSQL文
+
 	selectPosts = "SELECT * FROM posts ORDER BY created_at DESC"
 )
 
-// main関数は、プログラムのエントリーポイント、init()関数の実行後に実行される
 func main() {
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("serviceAccountKey.json")
@@ -72,12 +70,14 @@ func main() {
 	// ルーティングの設定
 	r := chi.NewRouter()
 
-	firebaseAuthMiddleware := controller.AuthMiddleware(authClient)
+	r.Use(controller.CorsMiddleware)
+    firebaseAuthMiddleware := controller.AuthMiddleware(authClient)
+
 	r.Post("/api/users/", registerUserController.RegisterUserHandler) 
 	r.Get("/api/search/", searchUserController.SearchUsersHandler)
 	r.Get("/api/posts/", postController.GetAllPostsHandler)
 
-	// 認証が必要なエンドポイント
+
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
@@ -91,7 +91,6 @@ func main() {
 		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)
 	})
 
-	// サーバーの起動、ポート番号は8080
-	fmt.Println("http://localhost:8080 でサーバーを起動します")
+
 	http.ListenAndServe(":8080", r)
 }
