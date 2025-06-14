@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-// respondJSON はJSON形式でレスポンスを返します。
 func respondJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -17,7 +16,6 @@ func respondJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	}
 }
 
-// decodeBody はリクエストボディをデコードします。
 func decodeBody(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
