@@ -27,6 +27,9 @@ func (d *userDao) FindById(Id string) (*model.User, error) {
 	user := &model.User{}
 	err := row.Scan(&user.Id, &user.Name, &user.Profile.Bio, &user.Profile.IconUrl)
 	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil, nil
+		}
 		return nil, fmt.Errorf("failed to scan user: %w", err)
 	}
 	

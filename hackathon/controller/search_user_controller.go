@@ -26,6 +26,10 @@ func (c *SearchUserController) GetUserProfileHandler(w http.ResponseWriter, r *h
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	if user == nil{
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
 	respondJSON(w, http.StatusOK, user)
 }
 
