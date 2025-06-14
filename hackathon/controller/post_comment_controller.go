@@ -20,7 +20,6 @@ func NewPostCommentController(cu usecase.CommentUsecase) *PostCommentController 
 func (c *PostCommentController) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
-		// このエラーは、ミドルウェアが正しく設定されていれば通常は発生しません。
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
 		return
 	}
