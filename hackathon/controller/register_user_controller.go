@@ -29,7 +29,7 @@ func (c *RegisterUserController) RegisterUserHandler(w http.ResponseWriter, r *h
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	row, err := c.registerUserUsecase.RegisterUser(user.Id, user.Name, user.Password, user.Profile.DisplayName, user.Profile.Bio, user.Profile.IconUrl, user.Age); 
+	row, err := c.registerUserUsecase.RegisterUser(user.Id, user.Name, user.Profile.Bio, user.Profile.IconUrl); 
 	if err != nil {
 		log.Printf("fail: registerUserUsecase.RegisterUser, %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)

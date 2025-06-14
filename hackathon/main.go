@@ -73,14 +73,16 @@ func main() {
 	r := chi.NewRouter()
 
 	firebaseAuthMiddleware := controller.AuthMiddleware(authClient)
-
-	r.Get("/api/users/", registerUserController.RegisterUserHandler) 
+	r.Post("/api/users/", registerUserController.RegisterUserHandler) 
 	r.Get("/api/search/", searchUserController.SearchUsersHandler)
 	r.Get("/api/posts/", postController.GetAllPostsHandler)
 
 	// 認証が必要なエンドポイント
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
+		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
+		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler)      
+		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
 		r.Post("/api/posts/", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
 		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)

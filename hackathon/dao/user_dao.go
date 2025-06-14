@@ -22,10 +22,10 @@ func NewUserDao(db *sql.DB) UserDao {
 }
 
 func (d *userDao) FindById(Id string) (*model.User, error) {
-	row := d.db.QueryRow("SELECT id, name, age, password, display_name, bio, icon_url FROM users WHERE id = ?", Id)
+	row := d.db.QueryRow("SELECT id, name, bio, icon_url FROM users WHERE id = ?", Id)
 	
 	user := &model.User{}
-	err := row.Scan(&user.Id, &user.Name, &user.Age, &user.Password, &user.Profile.DisplayName, &user.Profile.Bio, &user.Profile.IconUrl)
+	err := row.Scan(&user.Id, &user.Name, &user.Profile.Bio, &user.Profile.IconUrl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan user: %w", err)
 	}
@@ -35,12 +35,9 @@ func (d *userDao) FindById(Id string) (*model.User, error) {
 
 func (d *userDao) Create(user *model.User) error {
 	_, err := d.db.Exec(
-		"INSERT INTO users (id, name, age, password, display_name, bio, icon_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO users (id, name, bio, icon_url, created_at) VALUES (?, ?, ?, ?, ?)",
 		user.Id,
 		user.Name,
-		user.Age,
-		user.Password,
-		user.Profile.DisplayName,
 		user.Profile.Bio,
 		user.Profile.IconUrl,
 		user.CreatedAt,
@@ -55,7 +52,7 @@ func (d *userDao) Create(user *model.User) error {
 func (d *userDao) SearchByName(query string) ([]model.User, error) {
 	query = "%" + query + "%"
 
-	SQL := "SELECT id, name, age, password, display_name, bio, icon_url FROM users WHERE name LIKE ?"
+	SQL := "SELECT id, name, bio, icon_url FROM users WHERE name LIKE ?"
 	rows, err := d.db.Query(SQL, query)
 	if err != nil {
 		log.Printf("ERROR: Failed to search users: %v", err)
@@ -66,7 +63,7 @@ func (d *userDao) SearchByName(query string) ([]model.User, error) {
 	var users []model.User
 	for rows.Next() {
 		var user model.User
-		err := rows.Scan(&user.Id, &user.Name, &user.Age, &user.Password, &user.Profile.DisplayName, &user.Profile.Bio, &user.Profile.IconUrl)
+		err := rows.Scan(&user.Id, &user.Name, &user.Profile.Bio, &user.Profile.IconUrl)
 		if err != nil {
 			log.Printf("ERROR: Failed to scan user: %v", err)
 		}
