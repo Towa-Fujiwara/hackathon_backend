@@ -24,8 +24,8 @@ func (c *RegisterUserController) RegisterUserHandler(w http.ResponseWriter, r *h
 	}
 
 	// 認証ミドルウェアからユーザーのUIDを取得
-	userUID := r.Context().Value("firebase_uid").(string)
-	if userUID == "" {
+	userUID, ok := r.Context().Value(userContextKey).(string)
+	if !ok || userUID == "" {
 		log.Printf("fail: user UID not found in context")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
