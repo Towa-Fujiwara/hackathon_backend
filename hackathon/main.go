@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"hackathon/controller"
-	"fmt"
 	"hackathon/dao"
 	"hackathon/usecase"
 	firebase "firebase.google.com/go/v4"
