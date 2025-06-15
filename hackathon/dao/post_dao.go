@@ -97,19 +97,11 @@ func (d *postDao) Create(post *model.Post) error {
 	if post.UserId == "" {
 		return fmt.Errorf("user id is not set")
 	}
-	result, err := d.db.Exec("INSERT INTO posts (userId, text, image, createdAt) VALUES (?, ?, ?, ?)",
-		post.UserId, post.Text, post.Image, post.CreatedAt)
+	result, err := d.db.Exec("INSERT INTO posts (id, userId, text, image, createdAt) VALUES (?, ?, ?, ?)",
+		post.id, post.UserId, post.Text, post.Image, post.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create post: %w", err)
 	}
-	return nil
-	newID, err := result.LastInsertId()
-	if err != nil {
-		// LastInsertIdがサポートされていない場合でも処理を続行させるため、エラーログは出すが処理は止めない
-		fmt.Printf("could not get last insert ID: %v\n", err)
-		return nil
-	}
-	post.Id = strconv.FormatInt(newID, 10)
 	return nil
 }
 
