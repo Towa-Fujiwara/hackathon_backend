@@ -36,7 +36,22 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 
 
 func (d *postDao) FindAll() ([]model.Post, error) {
-	const selectPosts = "SELECT id, userId, text, image, createdAt FROM posts ORDER BY createdAt DESC"
+	const selectPosts = `
+        SELECT
+            p.id, p.userId, p.text, p.image, p.createdAt,
+            COUNT(DISTINCT l.id) AS likeCount,
+            COUNT(DISTINCT c.id) AS commentCount
+        FROM
+            posts AS p
+        LEFT JOIN
+            likes AS l ON p.id = l.postId
+        LEFT JOIN
+            comments AS c ON p.id = c.postId
+        GROUP BY
+            p.id
+        ORDER BY
+            p.createdAt DESC
+    `
 
 	rows, err := d.db.Query(selectPosts)
 	if err != nil {
@@ -48,7 +63,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
+		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
