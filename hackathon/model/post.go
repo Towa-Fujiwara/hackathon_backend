@@ -11,8 +11,8 @@ type Post struct {
 	Text string `json:"text"`
 	Image string `json:"image"`
 	CreatedAt time.Time `json:"createdAt"`
-	LikeCount    int       `json:"likeCount"`
-	CommentCount int       `json:"commentCount"`
+	/*LikeCount    int       `json:"likeCount"`
+	CommentCount int       `json:"commentCount"`*/
 }
 
 
