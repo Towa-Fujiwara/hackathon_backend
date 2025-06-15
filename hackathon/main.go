@@ -52,7 +52,7 @@ func main() {
 	dao.InitDB(dbUser, dbPwd, dbName, instanceConnectionName)
 	postDao := dao.NewPostDao(dao.DB())
 	postUsecase := usecase.NewPostUsecase(postDao)
-	postController := controller.NewPostController(postUsecase)
+	postController := controller.NewPostController(postUsecase, registerUserUsecase)
 	registerUserDao := dao.NewUserDao(dao.DB())
 	registerUserUsecase := usecase.NewUserUsecase(registerUserDao)
 	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
@@ -65,6 +65,9 @@ func main() {
 	followUserDao := dao.NewFollowUserDao(dao.DB())
 	followUserUsecase := usecase.NewFollowUserUsecase(followUserDao)
 	followUserController := controller.NewFollowUserController(followUserUsecase)
+	postLikeDao := dao.NewLikeDao(dao.DB()) //
+	ostLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao) //
+	postLikeController := controller.NewPostLikeController(postLikeUsecase)
 
 	// ルーティングの設定
 	r := chi.NewRouter()
@@ -80,9 +83,12 @@ func main() {
 		r.Use(firebaseAuthMiddleware)
 		r.Post("/api/users", registerUserController.RegisterUserHandler) 
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
-		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler)      
+		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
+		     
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
 		r.Post("/api/posts", postController.CreatePostHandler)
+		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)
+		r.Get("/api/posts/{postId}/comments", commentController.GetCommentsHandler)
 		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
 		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)
 		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
