@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"hackathon/model" 
-	"strconv"
 )
 
 type PostDao interface {
@@ -97,8 +96,8 @@ func (d *postDao) Create(post *model.Post) error {
 	if post.UserId == "" {
 		return fmt.Errorf("user id is not set")
 	}
-	result, err := d.db.Exec("INSERT INTO posts (id, userId, text, image, createdAt) VALUES (?, ?, ?, ?)",
-		post.id, post.UserId, post.Text, post.Image, post.CreatedAt)
+	_, err := d.db.Exec("INSERT INTO posts (id, userId, text, image, createdAt) VALUES (?, ?, ?, ?, ?)",
+		post.Id, post.UserId, post.Text, post.Image, post.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create post: %w", err)
 	}
@@ -117,7 +116,6 @@ func (d *postDao) Update(post *model.Post) error {
 }
 
 func (d *postDao) Delete(Id string) error {
-
 	result, err := d.db.Exec("DELETE FROM posts WHERE id = ?", Id)
 	if err != nil {
 		return fmt.Errorf("failed to delete post: %w", err)

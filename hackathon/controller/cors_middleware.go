@@ -18,7 +18,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 			"https://hackathon-frontend-cu4r.vercel.app",
 			"https://hackathon-frontend-o0ty9vtbr-towa-fujiwaras-projects.vercel.app",
 			"https://hackathon-frontend-cu4r-git-firebase-tfujis-projects.vercel.app",
-			"https://hackathon-frontend-cu4r-myxph6rbv-tfujis-projects.vercel.app"
+			"https://hackathon-frontend-cu4r-myxph6rbv-tfujis-projects.vercel.app",
         }
         
         origin := r.Header.Get("Origin")
