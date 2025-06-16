@@ -50,23 +50,29 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	instanceConnectionName := os.Getenv("INSTANCE_CONNECTION_NAME")
 	dao.InitDB(dbUser, dbPwd, dbName, instanceConnectionName)
+	
+
 	postDao := dao.NewPostDao(dao.DB())
-	postUsecase := usecase.NewPostUsecase(postDao)
-	postController := controller.NewPostController(postUsecase, registerUserUsecase)
 	registerUserDao := dao.NewUserDao(dao.DB())
-	registerUserUsecase := usecase.NewUserUsecase(registerUserDao)
-	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
 	searchUserDao := dao.NewUserDao(dao.DB())
-	searchUserUsecase := usecase.NewUserUsecase(searchUserDao)
-	searchUserController := controller.NewSearchUserController(searchUserUsecase)
 	commentDao := dao.NewCommentDao(dao.DB())
-	commentUsecase := usecase.NewCommentUsecase(commentDao)
-	commentController := controller.NewPostCommentController(commentUsecase)
 	followUserDao := dao.NewFollowUserDao(dao.DB())
+	postLikeDao := dao.NewLikeDao(dao.DB())
+	
+
+	postUsecase := usecase.NewPostUsecase(postDao)
+	registerUserUsecase := usecase.NewUserUsecase(registerUserDao)
+	searchUserUsecase := usecase.NewUserUsecase(searchUserDao)
+	commentUsecase := usecase.NewCommentUsecase(commentDao)
 	followUserUsecase := usecase.NewFollowUserUsecase(followUserDao)
+	postLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao)
+	
+
+	postController := controller.NewPostController(postUsecase, registerUserUsecase)
+	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
+	searchUserController := controller.NewSearchUserController(searchUserUsecase)
+	commentController := controller.NewPostCommentController(commentUsecase)
 	followUserController := controller.NewFollowUserController(followUserUsecase)
-	postLikeDao := dao.NewLikeDao(dao.DB()) //
-	ostLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao) //
 	postLikeController := controller.NewPostLikeController(postLikeUsecase)
 
 	// ルーティングの設定

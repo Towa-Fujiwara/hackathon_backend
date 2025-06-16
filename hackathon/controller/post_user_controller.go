@@ -64,6 +64,7 @@ func (c *PostController) GetAllPostsByUserIdHandler(w http.ResponseWriter, r *ht
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	respondJSON(w, http.StatusOK, posts)
 }
 
 
