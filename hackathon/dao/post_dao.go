@@ -85,7 +85,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 	}
 	defer rows.Close()
 
-	var posts []model.Post
+	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
 		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
@@ -132,7 +132,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 	}
 	defer rows.Close()
 
-	var posts []model.Post
+	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
 		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
