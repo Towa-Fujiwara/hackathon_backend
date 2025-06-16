@@ -3,17 +3,18 @@ package dao
 import (
 	"database/sql"
 	"fmt"
-	"hackathon/model" 
+	"hackathon/model"
 )
 
 type PostDao interface {
-    FindAll() ([]model.Post, error)
-    Create(post *model.Post) error
+	FindAll() ([]model.Post, error)
+	Create(post *model.Post) error
 	FindById(id string) (*model.Post, error)
 	Update(post *model.Post) error
 	Delete(id string) error
 	FindAllByUserId(uid string) ([]model.Post, error)
 }
+
 type postDao struct {
 	db *sql.DB
 }
@@ -23,21 +24,59 @@ func NewPostDao(db *sql.DB) PostDao {
 }
 
 func (d *postDao) FindById(Id string) (*model.Post, error) {
-	row := d.db.QueryRow("SELECT id, userId, text, image, createdAt FROM posts WHERE id = ?", Id)
+	const selectPost = `
+		SELECT
+			p.id,
+			p.userId,
+			p.text,
+			p.image,
+			p.createdAt,
+			COUNT(DISTINCT l.id) AS likeCount,
+			COUNT(DISTINCT c.id) AS commentCount
+		FROM
+			posts AS p
+		LEFT JOIN
+			likes AS l ON p.id = l.postId
+		LEFT JOIN
+			comments AS c ON p.id = c.postId
+		WHERE
+			p.id = ?
+		GROUP BY
+			p.id
+	`
+	row := d.db.QueryRow(selectPost, Id)
 
 	post := &model.Post{}
-	err := row.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
+	err := row.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("failed to scan post: %w", err)
 	}
 	return post, nil
 }
 
-
-
 func (d *postDao) FindAll() ([]model.Post, error) {
 	const selectPosts = `
-        SELECT id, userId, text, image, createdAt FROM posts ORDER BY createdAt DESC
+        SELECT
+            p.id,
+            p.userId,
+            p.text,
+            p.image,
+            p.createdAt,
+            COUNT(DISTINCT l.id) AS likeCount,
+            COUNT(DISTINCT c.id) AS commentCount
+        FROM
+            posts AS p
+        LEFT JOIN
+            likes AS l ON p.id = l.postId
+        LEFT JOIN
+            comments AS c ON p.id = c.postId
+        GROUP BY
+            p.id
+        ORDER BY
+            p.createdAt DESC
     `
 
 	rows, err := d.db.Query(selectPosts)
@@ -47,10 +86,9 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 	defer rows.Close()
 
 	var posts []model.Post
-
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
+		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
@@ -65,19 +103,39 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 }
 
 func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
-	const selectPosts = "SELECT id, userId, text, image, createdAt FROM posts WHERE userId = ? ORDER BY createdAt DESC"
+	const selectPosts = `
+		SELECT
+			p.id,
+			p.userId,
+			p.text,
+			p.image,
+			p.createdAt,
+			COUNT(DISTINCT l.id) AS likeCount,
+			COUNT(DISTINCT c.id) AS commentCount
+		FROM
+			posts AS p
+		LEFT JOIN
+			likes AS l ON p.id = l.postId
+		LEFT JOIN
+			comments AS c ON p.id = c.postId
+		WHERE
+			p.userId = ?
+		GROUP BY
+			p.id
+		ORDER BY
+			p.createdAt DESC
+	`
 
 	rows, err := d.db.Query(selectPosts, uid)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query for all posts: %w", err)
+		return nil, fmt.Errorf("failed to execute query for all posts by user: %w", err)
 	}
 	defer rows.Close()
 
 	var posts []model.Post
-
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt)
+		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
