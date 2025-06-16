@@ -28,7 +28,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
                 break
             }
         }
-        
+        //
         w.Header().Set("Access-Control-Allow-Methods", "*")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
         w.Header().Set("Access-Control-Allow-Credentials", "true")
