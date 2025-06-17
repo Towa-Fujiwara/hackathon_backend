@@ -11,16 +11,26 @@ import (
 
 type PostCommentController struct {
 	commentUsecase usecase.CommentUsecase
+	userUsecase    usecase.UserUsecase
 }
 
-func NewPostCommentController(cu usecase.CommentUsecase) *PostCommentController {
-	return &PostCommentController{commentUsecase: cu}
+func NewPostCommentController(cu usecase.CommentUsecase, uu usecase.UserUsecase) *PostCommentController {
+	return &PostCommentController{
+	commentUsecase: cu,
+	userUsecase:    uu,
+	}
 }
 
 func (c *PostCommentController) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
+		return
+	}
+    appUser, err := c.userUsecase.GetUserByFirebaseUID(uid)
+	if err != nil || appUser == nil {
+		log.Printf("ERROR: Failed to find user by firebaseUID %s: %v\n", uid, err)
+		http.Error(w, "Authenticated user not found in application database.", http.StatusInternalServerError)
 		return
 	}
 	postId := chi.URLParam(r, "postId")
@@ -33,7 +43,8 @@ func (c *PostCommentController) CreateCommentHandler(w http.ResponseWriter, r *h
 		http.Error(w, "Bad Request: Comment is required", http.StatusBadRequest)
 		return
 	}
-	comment.UserId = uid
+	comment.UserId = appUser.UserId
+	comment.PostId = postId
 	createdComment, err := c.commentUsecase.CreateComment(&comment)
 	if err != nil {
 		log.Printf("failed to create comment: %v", err)

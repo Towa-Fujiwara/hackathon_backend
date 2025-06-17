@@ -66,14 +66,15 @@ func main() {
 	commentUsecase := usecase.NewCommentUsecase(commentDao)
 	followUserUsecase := usecase.NewFollowUserUsecase(followUserDao)
 	postLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao)
+	userUsecase := usecase.NewUserUsecase(registerUserDao)
 	
 
 	postController := controller.NewPostController(postUsecase, registerUserUsecase)
 	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
 	searchUserController := controller.NewSearchUserController(searchUserUsecase)
-	commentController := controller.NewPostCommentController(commentUsecase)
+	commentController := controller.NewPostCommentController(commentUsecase, userUsecase)
 	followUserController := controller.NewFollowUserController(followUserUsecase)
-	postLikeController := controller.NewPostLikeController(postLikeUsecase)
+	postLikeController := controller.NewPostLikeController(postLikeUsecase, userUsecase)
 
 	// ルーティングの設定
 	r := chi.NewRouter()
