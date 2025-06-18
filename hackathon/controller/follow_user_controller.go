@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"hackathon/usecase"
 	"hackathon/model"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 type FollowUserController struct {
