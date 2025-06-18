@@ -36,7 +36,8 @@ func (c *PostLikeController) LikePostHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Authenticated user not found in application database.", http.StatusInternalServerError)
 		return
 	}
-	postId := chi.URLParam(r, "postId")
+	routeContext := chi.RouteContext(r.Context())
+	postId := routeContext.URLParam("postId")
     log.Printf("Extracted 'postId' parameter: --->%s<---", postId)//
 	if postId == "" {
         http.Error(w, "Bad Request: Post ID is required", http.StatusBadRequest)
