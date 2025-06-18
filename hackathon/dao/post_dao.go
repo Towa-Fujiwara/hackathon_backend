@@ -47,7 +47,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 		WHERE
 			p.id = ?
 		GROUP BY
-			p.id
+			p.id, u.name, u.iconUrl
 	`
 	row := d.db.QueryRow(selectPost, Id)
 
