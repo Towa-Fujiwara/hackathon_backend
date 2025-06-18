@@ -84,14 +84,14 @@ func main() {
 
 	r.Get("/api/search", searchUserController.SearchUsersHandler)
 	r.Get("/api/posts", postController.GetAllPostsHandler)
-
+	r.Get("/api/posts/{postId}", postController.GetPostHandler)
+	r.Get("/api/users/id/{userId}", searchUserController.GetUserProfileHandler)  
 
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
 		r.Post("/api/users", registerUserController.RegisterUserHandler) 
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
 		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
-		     
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
 		r.Post("/api/posts", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)
