@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"hackathon/model"
+	"log"
 )
 
 type PostDao interface {
@@ -98,6 +99,11 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
+		
+		// 投稿データをログ出力
+		log.Printf("取得した投稿: ID=%s, UserID=%s, UserName=%s, Text=%s, Image=%s, CreatedAt=%s, LikeCount=%d, CommentCount=%d",
+			post.Id, post.UserId, post.UserName, post.Text, post.Image, post.CreatedAt, post.LikeCount, post.CommentCount)
+		
 		posts = append(posts, post)
 	}
 
@@ -105,6 +111,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 		return nil, fmt.Errorf("an error occurred during rows iteration: %w", err)
 	}
 
+	log.Printf("合計 %d 件の投稿を取得しました", len(posts))
 	return posts, nil
 }
 
