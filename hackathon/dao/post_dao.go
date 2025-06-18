@@ -30,6 +30,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 			p.id,
 			p.userId,
 			u.name AS userName,
+			u.iconUrl,
 			p.text,
 			p.image,
 			p.createdAt,
@@ -67,6 +68,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
             p.id,
             p.userId,
             u.name AS userName,
+            u.iconUrl, 
             p.text,
             p.image,
             p.createdAt,
@@ -81,7 +83,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
         LEFT JOIN
             comments AS c ON p.id = c.postId
         GROUP BY
-            p.id
+            p.id, u.name, u.iconUrl 
         ORDER BY
             p.createdAt DESC
     `
@@ -95,14 +97,24 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+		err := rows.Scan(
+			&post.Id, 
+			&post.UserId, 
+			&post.UserName, 
+			&post.IconUrl,
+			&post.Text, 
+			&post.Image, 
+			&post.CreatedAt, 
+			&post.LikeCount, 
+			&post.CommentCount,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
 		
 		// 投稿データをログ出力
-		log.Printf("取得した投稿: ID=%s, UserID=%s, UserName=%s, Text=%s, Image=%s, CreatedAt=%s, LikeCount=%d, CommentCount=%d",
-			post.Id, post.UserId, post.UserName, post.Text, post.Image, post.CreatedAt, post.LikeCount, post.CommentCount)
+		log.Printf("取得した投稿: ID=%s, UserID=%s, UserName=%s, IconUrl=%s, Text=%s, Image=%s, CreatedAt=%s, LikeCount=%d, CommentCount=%d",
+			post.Id, post.UserId, post.UserName, post.IconUrl, post.Text, post.Image, post.CreatedAt, post.LikeCount, post.CommentCount)
 		
 		posts = append(posts, post)
 	}
@@ -121,6 +133,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 			p.id,
 			p.userId,
 			u.name AS userName,
+			u.iconUrl,
 			p.text,
 			p.image,
 			p.createdAt,
@@ -137,7 +150,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 		WHERE
 			p.userId = ?
 		GROUP BY
-			p.id
+			p.id, u.name, u.iconUrl
 		ORDER BY
 			p.createdAt DESC
 	`
@@ -151,7 +164,17 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+		err := rows.Scan(
+			&post.Id, 
+			&post.UserId, 
+			&post.UserName, 
+			&post.IconUrl,
+			&post.Text, 
+			&post.Image, 
+			&post.CreatedAt, 
+			&post.LikeCount, 
+			&post.CommentCount,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}

@@ -8,7 +8,8 @@ import (
 type Post struct {
 	Id        string    `json:"id"`
 	UserId    string    `json:"userId"`
-	UserName  string    `json:"userName"`
+	UserName  string    `json:"name"`
+	IconUrl  string `json:"iconUrl"`
 	Text string `json:"text"`
 	Image string `json:"image"`
 	CreatedAt time.Time `json:"createdAt"`
