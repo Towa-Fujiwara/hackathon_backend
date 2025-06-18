@@ -52,7 +52,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 	row := d.db.QueryRow(selectPost, Id)
 
 	post := &model.Post{}
-	err := row.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+	err := row.Scan(&post.Id, &post.UserId, &post.UserName, &post.IconUrl, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
