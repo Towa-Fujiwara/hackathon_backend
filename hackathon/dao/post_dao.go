@@ -28,6 +28,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 		SELECT
 			p.id,
 			p.userId,
+			u.name AS userName,
 			p.text,
 			p.image,
 			p.createdAt,
@@ -35,6 +36,8 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 			COUNT(DISTINCT c.id) AS commentCount
 		FROM
 			posts AS p
+		LEFT JOIN
+			users AS u ON p.userId = u.userId
 		LEFT JOIN
 			likes AS l ON p.id = l.postId
 		LEFT JOIN
@@ -47,7 +50,7 @@ func (d *postDao) FindById(Id string) (*model.Post, error) {
 	row := d.db.QueryRow(selectPost, Id)
 
 	post := &model.Post{}
-	err := row.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+	err := row.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -62,6 +65,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
         SELECT
             p.id,
             p.userId,
+            u.name AS userName,
             p.text,
             p.image,
             p.createdAt,
@@ -69,6 +73,8 @@ func (d *postDao) FindAll() ([]model.Post, error) {
             COUNT(DISTINCT c.id) AS commentCount
         FROM
             posts AS p
+        LEFT JOIN
+            users AS u ON p.userId = u.userId
         LEFT JOIN
             likes AS l ON p.id = l.postId
         LEFT JOIN
@@ -88,7 +94,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+		err := rows.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
@@ -107,6 +113,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 		SELECT
 			p.id,
 			p.userId,
+			u.name AS userName,
 			p.text,
 			p.image,
 			p.createdAt,
@@ -114,6 +121,8 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 			COUNT(DISTINCT c.id) AS commentCount
 		FROM
 			posts AS p
+		LEFT JOIN
+			users AS u ON p.userId = u.userId
 		LEFT JOIN
 			likes AS l ON p.id = l.postId
 		LEFT JOIN
@@ -135,7 +144,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 	posts := []model.Post{}
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.Id, &post.UserId, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
+		err := rows.Scan(&post.Id, &post.UserId, &post.UserName, &post.Text, &post.Image, &post.CreatedAt, &post.LikeCount, &post.CommentCount)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post row: %w", err)
 		}
