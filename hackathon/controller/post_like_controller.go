@@ -34,7 +34,7 @@ func (c *PostLikeController) LikePostHandler(w http.ResponseWriter, r *http.Requ
 	if err != nil || appUser == nil {
 		log.Printf("ERROR: Failed to find user by firebaseUID %s: %v\n", uid, err)
 		http.Error(w, "Authenticated user not found in application database.", http.StatusInternalServerError)
-		return
+		return//
 	}
 	routeContext := chi.RouteContext(r.Context())
 	postId := routeContext.URLParam("postId")
