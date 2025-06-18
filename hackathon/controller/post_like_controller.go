@@ -21,6 +21,7 @@ func NewPostLikeController(pl usecase.PostLikeUsecase, uu usecase.UserUsecase) *
 }
 
 func (c *PostLikeController) LikePostHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("INFO: LikePostHandler received request for URL: %s", r.URL.Path)//
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
@@ -33,6 +34,7 @@ func (c *PostLikeController) LikePostHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	postId := chi.URLParam(r, "postId")
+    log.Printf("INFO: Extracted postId from URL: '%s'", postId)//
 	if postId == "" {
         http.Error(w, "Bad Request: Post ID is required", http.StatusBadRequest)
         return
