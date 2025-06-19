@@ -7,34 +7,30 @@ import (
 	"regexp"
 	"strings"
 	"hackathon/dao"
-	"hackathon/model"
+	"cloud.google.com/go/vertexai/genai"
 	"google.golang.org/api/option"
-	generativelanguage "google.golang.org/genproto/googleapis/ai/generativelanguage/v1beta"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type GeminiUsecase struct {
 	postDao dao.PostDao
-	client  generativelanguage.GenerativeServiceClient
+	client  *genai.Client
+	model   *genai.GenerativeModel
 }
 
-func NewGeminiUsecase(postDao dao.PostDao, apiKey string) (*GeminiUsecase, error) {
+func NewGeminiUsecase(postDao dao.PostDao, projectID, location, apiKey string) (*GeminiUsecase, error) {
 	ctx := context.Background()
-	
-	// Gemini APIクライアントの初期化
-	conn, err := grpc.DialContext(ctx, "generativelanguage.googleapis.com:443", 
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultCallOptions(grpc.WithPerRPCCredentials(option.WithAPIKey(apiKey))))
+
+	client, err := genai.NewClient(ctx, projectID, location, option.WithAPIKey(apiKey))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to Gemini API: %v", err)
+		return nil, fmt.Errorf("failed to create Gemini client: %v", err)
 	}
 
-	client := generativelanguage.NewGenerativeServiceClient(conn)
+	model := client.GenerativeModel("gemini-1.5-flash")
 
 	return &GeminiUsecase{
 		postDao: postDao,
 		client:  client,
+		model:   model,
 	}, nil
 }
 
@@ -104,38 +100,24 @@ func (g *GeminiUsecase) GenerateUserSummary(ctx context.Context, userId string) 
 
 JSONのみを返してください。`, allText)
 
-	// Gemini APIを呼び出し
-	request := &generativelanguage.GenerateContentRequest{
-		Model: "models/gemini-1.5-flash",
-		Contents: []*generativelanguage.Content{
-			{
-				Parts: []*generativelanguage.Part{
-					{
-						Text: prompt,
-					},
-				},
-			},
-		},
-		GenerationConfig: &generativelanguage.GenerationConfig{
-			Temperature:     0.7,
-			TopP:           0.8,
-			TopK:           40,
-			MaxOutputTokens: 1000,
-		},
-	}
-
-	response, err := g.client.GenerateContent(ctx, request)
+	// vertexai/genaiのAPIでリクエスト
+	resp, err := g.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate content: %v", err)
 	}
 
-	if len(response.Candidates) == 0 || len(response.Candidates[0].Content.Parts) == 0 {
+	if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
 		return nil, fmt.Errorf("no response from Gemini API")
 	}
 
 	// レスポンスを解析
-	summaryText := response.Candidates[0].Content.Parts[0].Text
-	
+	var summaryText string
+	for _, part := range resp.Candidates[0].Content.Parts {
+		if txt, ok := part.(genai.Text); ok {
+			summaryText += string(txt)
+		}
+	}
+
 	// JSONを抽出してパース
 	geminiResponse, err := g.parseGeminiResponse(summaryText)
 	if err != nil {
@@ -148,7 +130,7 @@ JSONのみを返してください。`, allText)
 			Personality: "分析中...",
 		}, nil
 	}
-	
+
 	return &UserSummary{
 		UserId:    userId,
 		UserName:  posts[0].UserName,
