@@ -51,6 +51,10 @@ func main() {
 	instanceConnectionName := os.Getenv("INSTANCE_CONNECTION_NAME")
 	dao.InitDB(dbUser, dbPwd, dbName, instanceConnectionName)
 	
+	projectID := os.Getenv("PROJECT_ID")
+	location := os.Getenv("LOCATION")
+	engineID := os.Getenv("ENGINE_ID")
+	searchQuery := os.Getenv("SEARCH_QUERY")
 
 	postDao := dao.NewPostDao(dao.DB())
 	registerUserDao := dao.NewUserDao(dao.DB())
@@ -58,7 +62,13 @@ func main() {
 	commentDao := dao.NewCommentDao(dao.DB())
 	followUserDao := dao.NewFollowUserDao(dao.DB())
 	postLikeDao := dao.NewLikeDao(dao.DB())
-	
+	var geminiUsecase *usecase.GeminiUsecase
+	if geminiApiKey != "" {
+		geminiUsecase, err = usecase.NewGeminiUsecase(postDao, geminiApiKey)
+		if err != nil {
+			log.Printf("Warning: failed to initialize Gemini usecase: %v", err)
+		}
+	}
 
 	postUsecase := usecase.NewPostUsecase(postDao)
 	registerUserUsecase := usecase.NewUserUsecase(registerUserDao)
@@ -68,13 +78,18 @@ func main() {
 	postLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao)
 	userUsecase := usecase.NewUserUsecase(registerUserDao)
 	
-
 	postController := controller.NewPostController(postUsecase, registerUserUsecase)
 	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
 	searchUserController := controller.NewSearchUserController(searchUserUsecase)
 	commentController := controller.NewPostCommentController(commentUsecase, userUsecase)
 	followUserController := controller.NewFollowUserController(followUserUsecase)
 	postLikeController := controller.NewPostLikeController(postLikeUsecase, userUsecase)
+	
+	// Geminiコントローラーの初期化
+	var geminiController *controller.GeminiController
+	if geminiUsecase != nil {
+		geminiController = controller.NewGeminiController(geminiUsecase)
+	}
 
 	// ルーティングの設定
 	r := chi.NewRouter()
@@ -101,8 +116,17 @@ func main() {
 		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
 		r.Get("/api/users/{userId}/following", followUserController.GetFollowingHandler)
 		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)
+		
+		// Gemini関連のエンドポイント
+		if geminiController != nil {
+			r.Get("/api/users/me/summary", geminiController.GenerateMySummaryHandler)
+		}
 	})
-
+	
+	// 認証不要のGeminiエンドポイント
+	if geminiController != nil {
+		r.Get("/api/users/{userId}/summary", geminiController.GenerateUserSummaryHandler)
+	}
 
 	http.ListenAndServe(":8080", r)
 }
