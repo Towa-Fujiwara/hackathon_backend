@@ -1,91 +1,93 @@
 package usecase
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"regexp"
-	"strings"
-	"hackathon/dao"
-	"cloud.google.com/go/vertexai/genai"
+    "context"
+    "encoding/json"
+    "fmt"
+    "regexp"
+    "strings"
+    "hackathon/dao"
+    "cloud.google.com/go/vertexai/genai"
+    "log"
 )
 
 type GeminiUsecase struct {
-	postDao dao.PostDao
-	client  *genai.Client
-	model   *genai.GenerativeModel
+    postDao dao.PostDao
+    client  *genai.Client
+    model   *genai.GenerativeModel
 }
 
 func NewGeminiUsecase(postDao dao.PostDao, projectID, location, engineID string) (*GeminiUsecase, error) {
-	ctx := context.Background()
+    ctx := context.Background()
 
-	client, err := genai.NewClient(ctx, projectID, location)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Gemini client: %v", err)
-	}
+    client, err := genai.NewClient(ctx, projectID, location)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create Gemini client: %v", err)
+    }
 
-	model := client.GenerativeModel(engineID)
+    model := client.GenerativeModel(engineID)
 
-	return &GeminiUsecase{
-		postDao: postDao,
-		client:  client,
-		model:   model,
-	}, nil
+    return &GeminiUsecase{
+        postDao: postDao,
+        client:  client,
+        model:   model,
+    }, nil
 }
 
 type UserSummary struct {
-	UserId    string `json:"userId"`
-	UserName  string `json:"userName"`
-	Summary   string `json:"summary"`
-	Interests []string `json:"interests"`
-	Personality string `json:"personality"`
+    UserId    string `json:"userId"`
+    UserName  string `json:"userName"`
+    Summary   string `json:"summary"`
+    Interests []string `json:"interests"`
+    Personality string `json:"personality"`
 }
 
 type GeminiResponse struct {
-	Summary    string   `json:"summary"`
-	Interests  []string `json:"interests"`
-	Personality string  `json:"personality"`
+    Summary    string   `json:"summary"`
+    Interests  []string `json:"interests"`
+    Personality string  `json:"personality"`
 }
 
 func (g *GeminiUsecase) GenerateUserSummary(ctx context.Context, userId string) (*UserSummary, error) {
-	// ユーザーの投稿を取得
-	posts, err := g.postDao.FindAllByUserId(userId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user posts: %v", err)
-	}
+    log.Printf("GeminiUsecase: GenerateUserSummaryで受信したuserId: %s", userId)
 
-	if len(posts) == 0 {
-		return &UserSummary{
-			UserId:    userId,
-			UserName:  "Unknown",
-			Summary:   "まだ投稿がありません",
-			Interests: []string{},
-			Personality: "投稿が少ないため、性格を分析できません",
-		}, nil
-	}
+    posts, err := g.postDao.FindAllByUserId(userId)
+    if err != nil {
+        log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) エラー: %v", userId, err)
+        return nil, fmt.Errorf("failed to get user posts: %v", err)
+    }
+    log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) で取得した投稿数: %d", userId, len(posts))
 
-	// 投稿のテキストを結合
-	var postTexts []string
-	for _, post := range posts {
-		if post.Text != "" {
-			postTexts = append(postTexts, post.Text)
-		}
-	}
+    if len(posts) == 0 {
+        return &UserSummary{
+            UserId:    userId,
+            UserName:  "Unknown",
+            Summary:   "まだ投稿がありません",
+            Interests: []string{},
+            Personality: "投稿が少ないため、性格を分析できません",
+        }, nil
+    }
 
-	if len(postTexts) == 0 {
-		return &UserSummary{
-			UserId:    userId,
-			UserName:  posts[0].UserName,
-			Summary:   "テキスト投稿がありません",
-			Interests: []string{},
-			Personality: "テキスト投稿が少ないため、性格を分析できません",
-		}, nil
-	}
+    var postTexts []string
+    for _, post := range posts {
+        if post.Text != "" {
+            postTexts = append(postTexts, post.Text)
+        }
+    }
 
-	allText := strings.Join(postTexts, "\n\n")
+    if len(postTexts) == 0 {
+        return &UserSummary{
+            UserId:    userId,
+            UserName:  posts[0].UserName,
+            Summary:   "テキスト投稿がありません",
+            Interests: []string{},
+            Personality: "テキスト投稿が少ないため、性格を分析できません",
+        }, nil
+    }
 
-	// Gemini APIに送信するプロンプトを作成
-	prompt := fmt.Sprintf(`
+    allText := strings.Join(postTexts, "\n\n")
+
+    prompt := fmt.Sprintf(`
 以下のユーザーの投稿を分析して、以下の形式でJSONを返してください：
 
 {
@@ -99,61 +101,62 @@ func (g *GeminiUsecase) GenerateUserSummary(ctx context.Context, userId string) 
 
 JSONのみを返してください。`, allText)
 
-	// vertexai/genaiのAPIでリクエスト
-	resp, err := g.model.GenerateContent(ctx, genai.Text(prompt))
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate content: %v", err)
-	}
+    resp, err := g.model.GenerateContent(ctx, genai.Text(prompt))
+    if err != nil {
+        log.Printf("GeminiUsecase: Gemini API GenerateContent エラー: %v", err)
+        return nil, fmt.Errorf("failed to generate content: %v", err)
+    }
 
-	if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
-		return nil, fmt.Errorf("no response from Gemini API")
-	}
+    if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
+        log.Print("GeminiUsecase: Gemini APIからのレスポンス候補がない、またはコンテンツが空です")
+        return nil, fmt.Errorf("no response from Gemini API")
+    }
 
-	// レスポンスを解析
-	var summaryText string
-	for _, part := range resp.Candidates[0].Content.Parts {
-		if txt, ok := part.(genai.Text); ok {
-			summaryText += string(txt)
-		}
-	}
+    var summaryText string
+    for _, part := range resp.Candidates[0].Content.Parts {
+        if txt, ok := part.(genai.Text); ok {
+            summaryText += string(txt)
+        }
+    }
+    log.Printf("GeminiUsecase: Gemini API生レスポンス: %s", summaryText)
 
-	// JSONを抽出してパース
-	geminiResponse, err := g.parseGeminiResponse(summaryText)
-	if err != nil {
-		// パースに失敗した場合は、テキストをそのまま使用
-		return &UserSummary{
-			UserId:    userId,
-			UserName:  posts[0].UserName,
-			Summary:   summaryText,
-			Interests: []string{"分析中..."},
-			Personality: "分析中...",
-		}, nil
-	}
+    geminiResponse, err := g.parseGeminiResponse(summaryText)
+    if err != nil {
+        log.Printf("GeminiUsecase: parseGeminiResponse エラー: %v", err)
+        return &UserSummary{
+            UserId:    userId,
+            UserName:  posts[0].UserName,
+            Summary:   summaryText,
+            Interests: []string{"分析中..."},
+            Personality: "分析中...",
+        }, nil
+    }
+    log.Printf("GeminiUsecase: パースされたGeminiResponse: %+v", geminiResponse)
 
-	return &UserSummary{
-		UserId:    userId,
-		UserName:  posts[0].UserName,
-		Summary:   geminiResponse.Summary,
-		Interests: geminiResponse.Interests,
-		Personality: geminiResponse.Personality,
-	}, nil
+    return &UserSummary{
+        UserId:    userId,
+        UserName:  posts[0].UserName,
+        Summary:   geminiResponse.Summary,
+        Interests: geminiResponse.Interests,
+        Personality: geminiResponse.Personality,
+    }, nil
 }
 
-// Gemini APIのレスポンスからJSONを抽出してパースする
 func (g *GeminiUsecase) parseGeminiResponse(text string) (*GeminiResponse, error) {
-	// JSONブロックを抽出する正規表現
-	jsonRegex := regexp.MustCompile(`\{[\s\S]*\}`)
-	matches := jsonRegex.FindString(text)
-	
-	if matches == "" {
-		return nil, fmt.Errorf("no JSON found in response")
-	}
-	
-	var response GeminiResponse
-	err := json.Unmarshal([]byte(matches), &response)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse JSON: %v", err)
-	}
-	
-	return &response, nil
-} 
+    jsonRegex := regexp.MustCompile(`\{[\s\S]*\}`)
+    matches := jsonRegex.FindString(text)
+    
+    if matches == "" {
+        log.Printf("parseGeminiResponse: レスポンスからJSONが見つかりません。テキスト: %s", text)
+        return nil, fmt.Errorf("no JSON found in response")
+    }
+    
+    var response GeminiResponse
+    err := json.Unmarshal([]byte(matches), &response)
+    if err != nil {
+        log.Printf("parseGeminiResponse: JSONパースに失敗しました。マッチしたJSON: %s, エラー: %v", matches, err)
+        return nil, fmt.Errorf("failed to parse JSON: %v", err)
+    }
+    
+    return &response, nil
+}
