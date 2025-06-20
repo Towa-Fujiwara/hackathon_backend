@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"hackathon/usecase"
 	"github.com/go-chi/chi/v5"
+	"log"
 )
 
 type GeminiController struct {
@@ -25,10 +26,12 @@ func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r 
 		return
 	}
 	userId := chi.URLParam(r, "userId")
+	log.Printf("GenerateUserSummaryHandler: URLパラメータのuserId: %s", userId)
 	if userId == "" {
 		http.Error(w, "userId is required", http.StatusBadRequest)
 		return
 	}
+	
 
 	summary, err := gc.geminiUsecase.GenerateUserSummary(r.Context(), userId)
 	if err != nil {
