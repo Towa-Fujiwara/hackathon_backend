@@ -118,7 +118,7 @@ func main() {
 		
 		// Gemini関連のエンドポイント
 		if geminiController != nil {
-			r.Get("/api/users/me/summary", geminiController.GenerateMySummaryHandler)
+			r.Post("/api/users/me/summary", geminiController.GenerateMySummaryHandler)
 		}
 	})
 	
