@@ -53,6 +53,7 @@ func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *h
 		http.Error(w, "userID not found in context", http.StatusUnauthorized)
 		return
 	}
+	log.Printf("GenerateMySummaryHandler: 認証済みFirebase UID: %s", firebaseUID)
 
 	userProfile, err := gc.userUsecase.GetUserByFirebaseUID(firebaseUID)
 	if err != nil {
