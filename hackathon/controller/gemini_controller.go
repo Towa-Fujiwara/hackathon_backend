@@ -9,10 +9,10 @@ import (
 
 type GeminiController struct {
 	geminiUsecase *usecase.GeminiUsecase
-	userUsecase   *usecase.UserUsecase
+	userUsecase   usecase.UserUsecase
 }
 
-func NewGeminiController(geminiUsecase *usecase.GeminiUsecase, userUsecase *usecase.UserUsecase) *GeminiController {
+func NewGeminiController(geminiUsecase *usecase.GeminiUsecase, userUsecase usecase.UserUsecase) *GeminiController {
 	return &GeminiController{
 		geminiUsecase: geminiUsecase,
 		userUsecase:   userUsecase,
@@ -51,7 +51,7 @@ func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	userProfile, err := gc.userUsecase.GetUserProfileByFirebaseUID(r.Context(), firebaseUID)
+	userProfile, err := gc.userUsecase.GetUserByFirebaseUID(firebaseUID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
