@@ -123,7 +123,7 @@ func main() {
 	
 	// 認証不要のGeminiエンドポイント
 	if geminiController != nil {
-		r.Get("/api/users/{userId}/summary", geminiController.GenerateUserSummaryHandler)
+		r.Post("/api/users/{userId}/summary", geminiController.GenerateUserSummaryHandler)
 	}
 
 	http.ListenAndServe(":8080", r)
