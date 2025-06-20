@@ -53,6 +53,7 @@ func main() {
 	
 	projectID := os.Getenv("PROJECT_ID")
 	location := os.Getenv("LOCATION")
+	engineID := os.Getenv("ENGINE_ID")
 
 	postDao := dao.NewPostDao(dao.DB())
 	registerUserDao := dao.NewUserDao(dao.DB())
@@ -62,7 +63,7 @@ func main() {
 	postLikeDao := dao.NewLikeDao(dao.DB())
 	var geminiUsecase *usecase.GeminiUsecase
 	if projectID != "" && location != "" {
-		geminiUsecase, err = usecase.NewGeminiUsecase(postDao, projectID, location)
+		geminiUsecase, err = usecase.NewGeminiUsecase(postDao, projectID, location, engineID)
 		if err != nil {
 			log.Printf("Warning: failed to initialize Gemini usecase: %v", err)
 		}

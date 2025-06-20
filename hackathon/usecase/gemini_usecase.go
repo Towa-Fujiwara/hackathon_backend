@@ -16,7 +16,7 @@ type GeminiUsecase struct {
 	model   *genai.GenerativeModel
 }
 
-func NewGeminiUsecase(postDao dao.PostDao, projectID, location string) (*GeminiUsecase, error) {
+func NewGeminiUsecase(postDao dao.PostDao, projectID, location, engineID string) (*GeminiUsecase, error) {
 	ctx := context.Background()
 
 	client, err := genai.NewClient(ctx, projectID, location)
@@ -24,7 +24,7 @@ func NewGeminiUsecase(postDao dao.PostDao, projectID, location string) (*GeminiU
 		return nil, fmt.Errorf("failed to create Gemini client: %v", err)
 	}
 
-	model := client.GenerativeModel("gemini-1.5-flash")
+	model := client.GenerativeModel(engineID)
 
 	return &GeminiUsecase{
 		postDao: postDao,

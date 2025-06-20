@@ -17,8 +17,12 @@ func NewGeminiController(geminiUsecase *usecase.GeminiUsecase) *GeminiController
 	}
 }
 
-// ユーザーの投稿からサマリーを生成するエンドポイント
+// ユーザーの投稿からサマリーを生成するエンドポイント（POST /api/users/{userId}/summary）
 func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	userId := chi.URLParam(r, "userId")
 	if userId == "" {
 		http.Error(w, "userId is required", http.StatusBadRequest)
@@ -37,8 +41,12 @@ func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r 
 	json.NewEncoder(w).Encode(summary)
 }
 
-// 自分の投稿からサマリーを生成するエンドポイント
+// 自分の投稿からサマリーを生成するエンドポイント（POST /api/users/me/summary）
 func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	// 認証ミドルウェアからユーザーIDを取得
 	userID, ok := r.Context().Value("userID").(string)
 	if !ok {
