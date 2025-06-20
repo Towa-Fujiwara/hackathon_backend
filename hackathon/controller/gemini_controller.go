@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"hackathon/usecase"
 	"github.com/go-chi/chi/v5"
-	"log"
+	"log" // logパッケージをインポート
 )
 
 type GeminiController struct {
@@ -20,18 +20,19 @@ func NewGeminiController(geminiUsecase *usecase.GeminiUsecase, userUsecase useca
 	}
 }
 
+// ユーザーの投稿からサマリーを生成するエンドポイント（POST /api/users/{userId}/summary）
 func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	userId := chi.URLParam(r, "userId")
-	log.Printf("GenerateUserSummaryHandler: URLパラメータのuserId: %s", userId)
+	log.Printf("GenerateUserSummaryHandler: URLパラメータのuserId: %s", userId) // URLパラメータのuserIdをログ出力
+
 	if userId == "" {
 		http.Error(w, "userId is required", http.StatusBadRequest)
 		return
 	}
-	
 
 	summary, err := gc.geminiUsecase.GenerateUserSummary(r.Context(), userId)
 	if err != nil {
@@ -43,6 +44,7 @@ func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r 
 	json.NewEncoder(w).Encode(summary)
 }
 
+// 自分の投稿からサマリーを生成するエンドポイント（POST /api/users/me/summary）
 func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -53,7 +55,7 @@ func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *h
 		http.Error(w, "userID not found in context", http.StatusUnauthorized)
 		return
 	}
-	log.Printf("GenerateMySummaryHandler: 認証済みFirebase UID: %s", firebaseUID)
+	log.Printf("GenerateMySummaryHandler: 認証済みFirebase UID: %s", firebaseUID) // 認証済みFirebase UIDをログ出力
 
 	userProfile, err := gc.userUsecase.GetUserByFirebaseUID(firebaseUID)
 	if err != nil {
@@ -65,6 +67,7 @@ func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *h
 		return
 	}
 	dbUserId := userProfile.UserId 
+	log.Printf("GenerateMySummaryHandler: データベース上のUserId: %s", dbUserId) // 取得したデータベース上のuserIdをログ出力
 
 	summary, err := gc.geminiUsecase.GenerateUserSummary(r.Context(), dbUserId)
 	if err != nil {

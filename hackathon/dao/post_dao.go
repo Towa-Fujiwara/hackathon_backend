@@ -127,7 +127,7 @@ func (d *postDao) FindAll() ([]model.Post, error) {
 }
 
 func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
-    log.Printf("PostDao: FindAllByUserIdで受信したuid: %s", uid)
+    log.Printf("PostDao: FindAllByUserIdで受信したuid: %s", uid) // FindAllByUserIdで受け取ったuidをログ出力
 
     const selectPosts = `
         SELECT
@@ -158,7 +158,7 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
 
     rows, err := d.db.Query(selectPosts, uid)
     if err != nil {
-        log.Printf("PostDao: FindAllByUserIdのクエリ実行エラー: %v", err)
+        log.Printf("PostDao: FindAllByUserIdのクエリ実行エラー: %v", err) // FindAllByUserIdのクエリ実行エラーをログ出力
         return nil, fmt.Errorf("failed to execute query for all posts by user: %w", err)
     }
     defer rows.Close()
@@ -178,17 +178,17 @@ func (d *postDao) FindAllByUserId(uid string) ([]model.Post, error) {
             &post.CommentCount,
         )
         if err != nil {
-            log.Printf("PostDao: FindAllByUserIdのスキャンエラー: %v", err)
+            log.Printf("PostDao: FindAllByUserIdのスキャンエラー: %v", err) // FindAllByUserIdのスキャンエラーをログ出力
             return nil, fmt.Errorf("failed to scan post row: %w", err)
         }
         posts = append(posts, post)
     }
 
     if err = rows.Err(); err != nil {
-        log.Printf("PostDao: FindAllByUserIdの行イテレーションエラー: %v", err)
+        log.Printf("PostDao: FindAllByUserIdの行イテレーションエラー: %v", err) // FindAllByUserIdの行イテレーションエラーをログ出力
         return nil, fmt.Errorf("an error occurred during rows iteration: %w", err)
     }
-    log.Printf("PostDao: FindAllByUserId(%s) で最終的に取得した投稿数: %d", uid, len(posts))
+    log.Printf("PostDao: FindAllByUserId(%s) で最終的に取得した投稿数: %d", uid, len(posts)) // 取得した最終的な投稿数をログ出力
 
     return posts, nil
 }
