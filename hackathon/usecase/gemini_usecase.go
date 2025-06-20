@@ -8,7 +8,6 @@ import (
 	"strings"
 	"hackathon/dao"
 	"cloud.google.com/go/vertexai/genai"
-	"google.golang.org/api/option"
 )
 
 type GeminiUsecase struct {
@@ -17,10 +16,10 @@ type GeminiUsecase struct {
 	model   *genai.GenerativeModel
 }
 
-func NewGeminiUsecase(postDao dao.PostDao, projectID, location, apiKey string) (*GeminiUsecase, error) {
+func NewGeminiUsecase(postDao dao.PostDao, projectID, location string) (*GeminiUsecase, error) {
 	ctx := context.Background()
 
-	client, err := genai.NewClient(ctx, projectID, location, option.WithAPIKey(apiKey))
+	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Gemini client: %v", err)
 	}

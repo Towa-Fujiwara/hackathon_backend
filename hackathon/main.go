@@ -53,7 +53,6 @@ func main() {
 	
 	projectID := os.Getenv("PROJECT_ID")
 	location := os.Getenv("LOCATION")
-	geminiApiKey := os.Getenv("GEMINI_API_KEY")
 
 	postDao := dao.NewPostDao(dao.DB())
 	registerUserDao := dao.NewUserDao(dao.DB())
@@ -62,8 +61,8 @@ func main() {
 	followUserDao := dao.NewFollowUserDao(dao.DB())
 	postLikeDao := dao.NewLikeDao(dao.DB())
 	var geminiUsecase *usecase.GeminiUsecase
-	if geminiApiKey != "" && projectID != "" && location != "" {
-		geminiUsecase, err = usecase.NewGeminiUsecase(postDao, projectID, location, geminiApiKey)
+	if projectID != "" && location != "" {
+		geminiUsecase, err = usecase.NewGeminiUsecase(postDao, projectID, location)
 		if err != nil {
 			log.Printf("Warning: failed to initialize Gemini usecase: %v", err)
 		}

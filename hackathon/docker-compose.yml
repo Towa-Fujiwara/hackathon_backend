@@ -19,6 +19,18 @@ services:
       - type: bind
         source: ./init
         target: /docker-entrypoint-initdb.d
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/serviceAccountKey.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      - hackathon-mysql
 
 volumes:
   hackathon-mysql-volume:
