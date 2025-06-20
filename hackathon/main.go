@@ -87,7 +87,7 @@ func main() {
 	// Geminiコントローラーの初期化
 	var geminiController *controller.GeminiController
 	if geminiUsecase != nil {
-		geminiController = controller.NewGeminiController(geminiUsecase)
+		geminiController = controller.NewGeminiController(geminiUsecase, userUsecase)
 	}
 
 	// ルーティングの設定

@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"hackathon/usecase"
-	"github.com/go-chi/chi/v5"
 )
 
 type GeminiController struct {
 	geminiUsecase *usecase.GeminiUsecase
+	userUsecase   usecase.UserUsecase
 }
 
-func NewGeminiController(geminiUsecase *usecase.GeminiUsecase) *GeminiController {
+func NewGeminiController(geminiUsecase *usecase.GeminiUsecase, userUsecase usecase.UserUsecase) *GeminiController {
 	return &GeminiController{
 		geminiUsecase: geminiUsecase,
+		userUsecase:   userUsecase, 
 	}
 }
 
@@ -23,31 +24,37 @@ func (gc *GeminiController) GenerateUserSummaryHandler(w http.ResponseWriter, r 
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	userId := chi.URLParam(r, "userId")
-	if userId == "" {
-		http.Error(w, "userId is required", http.StatusBadRequest)
+	firebaseUID, ok := r.Context().Value("userID").(string)
+	if !ok {
+		http.Error(w, "userID not found in context", http.StatusUnauthorized)
 		return
 	}
+	userProfile, err := gc.userUsecase.GetUserByFirebaseUID(firebaseUID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if userProfile == nil {
+		http.Error(w, "User profile not found for the authenticated user", http.StatusNotFound)
+		return
+	}
+	dbUserId := userProfile.UserId 
 
-	// ユーザーサマリーを生成
-	summary, err := gc.geminiUsecase.GenerateUserSummary(r.Context(), userId)
+	summary, err := gc.geminiUsecase.GenerateUserSummary(r.Context(), dbUserId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// JSONレスポンスを返す
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
 }
 
-// 自分の投稿からサマリーを生成するエンドポイント（POST /api/users/me/summary）
 func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// 認証ミドルウェアからユーザーIDを取得
 	userID, ok := r.Context().Value("userID").(string)
 	if !ok {
 		http.Error(w, "userID not found in context", http.StatusUnauthorized)
@@ -60,7 +67,6 @@ func (gc *GeminiController) GenerateMySummaryHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	// JSONレスポンスを返す
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
 } 
