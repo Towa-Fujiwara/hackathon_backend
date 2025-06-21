@@ -73,7 +73,7 @@ func main() {
 	registerUserUsecase := usecase.NewUserUsecase(registerUserDao)
 	searchUserUsecase := usecase.NewUserUsecase(searchUserDao)
 	commentUsecase := usecase.NewCommentUsecase(commentDao)
-	followUserUsecase := usecase.NewFollowUserUsecase(followUserDao)
+	followUserUsecase := usecase.NewFollowUserUsecase(followUserDao, registerUserDao)
 	postLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao)
 	userUsecase := usecase.NewUserUsecase(registerUserDao)
 	
@@ -101,6 +101,7 @@ func main() {
 	r.Get("/api/posts/{postId}", postController.GetPostHandler)
 	r.Get("/api/users/id/{userId}", searchUserController.GetUserProfileHandler)
 	r.Get("/api/posts/user/{userId}", postController.GetPostsByUserIdHandler)
+	r.Get("/api/users/{userId}/follow_counts", followUserController.GetUserFollowCountsHandler)
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
 		r.Post("/api/users", registerUserController.RegisterUserHandler) 
@@ -111,12 +112,14 @@ func main() {
 		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)
 		r.Get("/api/posts/{postId}/comments", commentController.GetCommentsHandler)
 		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
+
+		// Follow routes
 		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)
 		r.Delete("/api/users/{userId}/follow", followUserController.UnfollowUserHandler)
+		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)
 		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
 		r.Get("/api/users/{userId}/following", followUserController.GetFollowingHandler)
-		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)
-		
+
 		// Gemini関連のエンドポイント
 		if geminiController != nil {
 			r.Post("/api/users/me/summary", geminiController.GenerateMySummaryHandler)
