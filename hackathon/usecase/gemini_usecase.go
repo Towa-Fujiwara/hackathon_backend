@@ -7,30 +7,35 @@ import (
     "regexp"
     "strings"
     "hackathon/dao"
-    "cloud.google.com/go/vertexai/genai"
-    "log" // logパッケージをインポート
+    aiplatform "cloud.google.com/go/aiplatform/apiv1"
+    "cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
+    "google.golang.org/api/option"
+    "log"
 )
 
 type GeminiUsecase struct {
     postDao dao.PostDao
-    client  *genai.Client
-    model   *genai.GenerativeModel
+    client  *aiplatform.PredictionClient
+    projectID string
+    location  string
+    modelID   string
 }
 
 func NewGeminiUsecase(postDao dao.PostDao, projectID, location, engineID string) (*GeminiUsecase, error) {
     ctx := context.Background()
 
-    client, err := genai.NewClient(ctx, projectID, location)
+    // Vertex AIクライアントの初期化
+    client, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(fmt.Sprintf("%s-aiplatform.googleapis.com:443", location)))
     if err != nil {
-        return nil, fmt.Errorf("failed to create Gemini client: %v", err)
+        return nil, fmt.Errorf("failed to create PredictionClient: %v", err)
     }
-
-    model := client.GenerativeModel(engineID)
 
     return &GeminiUsecase{
         postDao: postDao,
         client:  client,
-        model:   model,
+        projectID: projectID,
+        location:  location,
+        modelID:   engineID,
     }, nil
 }
 
@@ -49,14 +54,14 @@ type GeminiResponse struct {
 }
 
 func (g *GeminiUsecase) GenerateUserSummary(ctx context.Context, userId string) (*UserSummary, error) {
-    log.Printf("GeminiUsecase: GenerateUserSummaryで受信したuserId: %s", userId) // GenerateUserSummaryで受け取ったuserIdをログ出力
+    log.Printf("GeminiUsecase: GenerateUserSummaryで受信したuserId: %s", userId)
 
     posts, err := g.postDao.FindAllByUserId(userId)
     if err != nil {
-        log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) エラー: %v", userId, err) // g.postDao.FindAllByUserIdのエラーをログ出力
+        log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) エラー: %v", userId, err)
         return nil, fmt.Errorf("failed to get user posts: %v", err)
     }
-    log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) で取得した投稿数: %d", userId, len(posts)) // 取得した投稿数をログ出力
+    log.Printf("GeminiUsecase: g.postDao.FindAllByUserId(%s) で取得した投稿数: %d", userId, len(posts))
 
     if len(posts) == 0 {
         return &UserSummary{
@@ -101,28 +106,71 @@ func (g *GeminiUsecase) GenerateUserSummary(ctx context.Context, userId string) 
 
 JSONのみを返してください。`, allText)
 
-    resp, err := g.model.GenerateContent(ctx, genai.Text(prompt))
-    if err != nil {
-        log.Printf("GeminiUsecase: Gemini API GenerateContent エラー: %v", err) // Gemini API GenerateContentのエラーをログ出力
-        return nil, fmt.Errorf("failed to generate content: %v", err)
+    // プロンプトの準備
+    instance := &aiplatformpb.Value{
+        Kind: &aiplatformpb.Value_StructValue{
+            StructValue: &aiplatformpb.Struct{
+                Fields: map[string]*aiplatformpb.Value{
+                    "prompt": {Kind: &aiplatformpb.Value_StringValue{StringValue: prompt}},
+                },
+            },
+        },
     }
 
-    if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
-        log.Print("GeminiUsecase: Gemini APIからのレスポンス候補がない、またはコンテンツが空です") // Gemini APIからのレスポンス候補がない、またはコンテンツが空の場合をログ出力
+    // パラメータの設定
+    parameters := &aiplatformpb.Value{
+        Kind: &aiplatformpb.Value_StructValue{
+            StructValue: &aiplatformpb.Struct{
+                Fields: map[string]*aiplatformpb.Value{
+                    "temperature": {Kind: &aiplatformpb.Value_NumberValue{NumberValue: 0.2}},
+                    "maxOutputTokens": {Kind: &aiplatformpb.Value_NumberValue{NumberValue: 1000}},
+                },
+            },
+        },
+    }
+
+    // 予測リクエストの構築
+    req := &aiplatformpb.PredictRequest{
+        Endpoint:   fmt.Sprintf("projects/%s/locations/%s/publishers/google/models/%s", g.projectID, g.location, g.modelID),
+        Instances:  []*aiplatformpb.Value{instance},
+        Parameters: parameters,
+    }
+
+    // 予測の実行
+    resp, err := g.client.Predict(ctx, req)
+    if err != nil {
+        log.Printf("GeminiUsecase: Gemini API Predict エラー: %v", err)
+        return nil, fmt.Errorf("failed to predict: %v", err)
+    }
+
+    if len(resp.GetPredictions()) == 0 {
+        log.Print("GeminiUsecase: Gemini APIからのレスポンス候補がない")
         return nil, fmt.Errorf("no response from Gemini API")
     }
 
+    // レスポンスからテキストを抽出
+    prediction := resp.GetPredictions()[0]
     var summaryText string
-    for _, part := range resp.Candidates[0].Content.Parts {
-        if txt, ok := part.(genai.Text); ok {
-            summaryText += string(txt)
+    
+    if contentValue, ok := prediction.GetStructValue().GetFields()["content"]; ok {
+        if textValue, ok := contentValue.GetStringValueOk(); ok {
+            summaryText = textValue
+        } else {
+            // contentフィールドが存在するが、StringValueではない場合
+            log.Printf("GeminiUsecase: contentフィールドがStringValueではありません: %+v", contentValue)
+            return nil, fmt.Errorf("unexpected content type in response")
         }
+    } else {
+        // contentフィールドが存在しない場合、prediction全体を文字列として扱う
+        log.Printf("GeminiUsecase: contentフィールドが見つかりません。prediction全体: %+v", prediction)
+        return nil, fmt.Errorf("no content field in prediction")
     }
-    log.Printf("GeminiUsecase: Gemini API生レスポンス: %s", summaryText) // Gemini APIからの生レスポンステキストをログ出力
+
+    log.Printf("GeminiUsecase: Gemini API生レスポンス: %s", summaryText)
 
     geminiResponse, err := g.parseGeminiResponse(summaryText)
     if err != nil {
-        log.Printf("GeminiUsecase: parseGeminiResponse エラー: %v", err) // parseGeminiResponseのエラーをログ出力
+        log.Printf("GeminiUsecase: parseGeminiResponse エラー: %v", err)
         return &UserSummary{
             UserId:    userId,
             UserName:  posts[0].UserName,
@@ -131,7 +179,7 @@ JSONのみを返してください。`, allText)
             Personality: "分析中...",
         }, nil
     }
-    log.Printf("GeminiUsecase: パースされたGeminiResponse: %+v", geminiResponse) // パースされたGeminiResponseをログ出力
+    log.Printf("GeminiUsecase: パースされたGeminiResponse: %+v", geminiResponse)
 
     return &UserSummary{
         UserId:    userId,
@@ -147,14 +195,14 @@ func (g *GeminiUsecase) parseGeminiResponse(text string) (*GeminiResponse, error
     matches := jsonRegex.FindString(text)
     
     if matches == "" {
-        log.Printf("parseGeminiResponse: レスポンスからJSONが見つかりません。テキスト: %s", text) // レスポンスからJSONが見つからない場合をログ出力
+        log.Printf("parseGeminiResponse: レスポンスからJSONが見つかりません。テキスト: %s", text)
         return nil, fmt.Errorf("no JSON found in response")
     }
     
     var response GeminiResponse
     err := json.Unmarshal([]byte(matches), &response)
     if err != nil {
-        log.Printf("parseGeminiResponse: JSONパースに失敗しました。マッチしたJSON: %s, エラー: %v", matches, err) // JSONパースに失敗した場合をログ出力
+        log.Printf("parseGeminiResponse: JSONパースに失敗しました。マッチしたJSON: %s, エラー: %v", matches, err)
         return nil, fmt.Errorf("failed to parse JSON: %v", err)
     }
     
