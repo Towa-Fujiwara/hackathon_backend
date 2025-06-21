@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(255) PRIMARY KEY,
+  firebase_uid VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  bio TEXT,
+  icon_url TEXT
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id VARCHAR(255) PRIMARY KEY,
+  userId VARCHAR(255),
+  text TEXT,
+  image TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+); 

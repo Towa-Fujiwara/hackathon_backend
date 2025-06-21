@@ -2,16 +2,20 @@ version: "3.8"
 
 services:
   hackathon-mysql:
+    image: mysql:8.0
     container_name: hackathon-mysql
-    build:
-      context: .
-      dockerfile: Dockerfile
     platform: linux/x86_64
+    restart: always
     tty: true
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hackathon
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      TZ: Asia/Tokyo
     ports:
       - 3307:3306
-    env_file:
-      - ./.env
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - type: volume
         source: hackathon-mysql-volume

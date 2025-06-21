@@ -1,5 +1,3 @@
-
-
 package dao
 
 import (
@@ -11,7 +9,7 @@ import (
 )
 
 var db *sql.DB
-
+//本番
 func InitDB(dbUser, dbPwd, dbName, instanceConnectionName string) {
 	socketDir, isSet := os.LookupEnv("DB_SOCKET_DIR")
     if !isSet {
