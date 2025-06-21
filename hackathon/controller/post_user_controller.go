@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"hackathon/model"
 	"hackathon/usecase"
+	"hackathon/dao"
 	"github.com/go-chi/chi/v5"
 	"log"
 )
@@ -11,12 +12,14 @@ import (
 type PostController struct {
 	postUsecase usecase.PostUsecase
 	userUsecase usecase.UserUsecase
+	followUserDao dao.FollowUserDao
 }
 
-func NewPostController(pu usecase.PostUsecase, uu usecase.UserUsecase) *PostController {
+func NewPostController(pu usecase.PostUsecase, uu usecase.UserUsecase, fud dao.FollowUserDao) *PostController {
 	return &PostController{
-	postUsecase: pu,
-    userUsecase: uu, 
+		postUsecase: pu,
+		userUsecase: uu,
+		followUserDao: fud,
 	}
 }
 
@@ -30,9 +33,7 @@ func (c *PostController) GetPostHandler(w http.ResponseWriter, r *http.Request) 
 	respondJSON(w, http.StatusOK, post)
 }
 
-
 func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
-
 	posts, err := c.postUsecase.FindAllPosts()
 	if err != nil {
 		log.Printf("ERROR: FindAllPosts failed: %v\n", err)
@@ -42,6 +43,65 @@ func (c *PostController) GetAllPostsHandler(w http.ResponseWriter, r *http.Reque
 	respondJSON(w, http.StatusOK, posts)
 }
 
+// フォロー中のユーザーの投稿を取得するハンドラー
+func (c *PostController) GetFollowingPostsHandler(w http.ResponseWriter, r *http.Request) {
+	// 認証されたユーザーのUIDを取得
+	firebaseUID, ok := r.Context().Value(userContextKey).(string)
+	if !ok || firebaseUID == "" {
+		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusUnauthorized)
+		return
+	}
+
+	// 認証されたユーザーの情報を取得
+	appUser, err := c.userUsecase.GetUserByFirebaseUID(firebaseUID)
+	if err != nil || appUser == nil {
+		log.Printf("ERROR: Failed to find user by firebaseUID %s: %v\n", firebaseUID, err)
+		http.Error(w, "Authenticated user not found in application database.", http.StatusInternalServerError)
+		return
+	}
+
+	// フォローしているユーザーのリストを取得
+	following, err := c.followUserDao.GetFollowing(appUser.UserId)
+	if err != nil {
+		log.Printf("ERROR: Failed to get following users: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// フォローしているユーザーがいない場合は空の配列を返す
+	if len(following) == 0 {
+		respondJSON(w, http.StatusOK, []model.Post{})
+		return
+	}
+
+	// フォローしているユーザーのIDリストを作成
+	followingUserIds := make([]string, len(following))
+	for i, follow := range following {
+		followingUserIds[i] = follow.FollowUserId
+	}
+
+	// フォローしているユーザーの投稿のみを取得
+	var posts []model.Post
+	allPosts, err := c.postUsecase.FindAllPosts()
+	if err != nil {
+		log.Printf("ERROR: FindAllPosts failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// フォローしているユーザーの投稿のみをフィルタリング
+	for _, post := range allPosts {
+		for _, followingUserId := range followingUserIds {
+			if post.UserId == followingUserId {
+				posts = append(posts, post)
+				break
+			}
+		}
+	}
+
+	log.Printf("Found %d posts from %d following users", len(posts), len(followingUserIds))
+	respondJSON(w, http.StatusOK, posts)
+}
 
 func (c *PostController) GetAllPostsByUserIdHandler(w http.ResponseWriter, r *http.Request) {
 	firebaseUID, ok := r.Context().Value(userContextKey).(string)
@@ -49,7 +109,6 @@ func (c *PostController) GetAllPostsByUserIdHandler(w http.ResponseWriter, r *ht
 		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
 		return
 	}
-
 
 	appUser, err := c.userUsecase.GetUserByFirebaseUID(firebaseUID)
     if err != nil || appUser == nil {

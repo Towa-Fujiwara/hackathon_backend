@@ -77,7 +77,7 @@ func main() {
 	postLikeUsecase := usecase.NewPostLikeUsecase(postLikeDao)
 	userUsecase := usecase.NewUserUsecase(registerUserDao)
 	
-	postController := controller.NewPostController(postUsecase, registerUserUsecase)
+	postController := controller.NewPostController(postUsecase, registerUserUsecase, followUserDao)
 	registerUserController := controller.NewRegisterUserController(registerUserUsecase)
 	searchUserController := controller.NewSearchUserController(searchUserUsecase)
 	commentController := controller.NewPostCommentController(commentUsecase, userUsecase)
@@ -108,6 +108,7 @@ func main() {
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
 		r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
+		r.Get("/api/posts/following", postController.GetFollowingPostsHandler)
 		r.Post("/api/posts", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)
 		r.Get("/api/posts/{postId}/comments", commentController.GetCommentsHandler)
