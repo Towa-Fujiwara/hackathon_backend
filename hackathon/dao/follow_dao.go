@@ -7,6 +7,7 @@ import (
 
 type FollowUserDao interface {
 	FollowUser(follow *model.Follow) error
+	UnfollowUser(userId, followUserId string) error
 	IsFollowing(userId, followUserId string) (bool, error)
 	GetFollowers(userId string) ([]model.Follow, error)
 	GetFollowing(userId string) ([]model.Follow, error)
@@ -23,6 +24,12 @@ func NewFollowUserDao(db *sql.DB) FollowUserDao {
 func (f *followDao) FollowUser(follow *model.Follow) error {
 	query := "INSERT INTO follows (id, userId, followUserId, createdAt) VALUES (?, ?, ?, ?)"
 	_, err := f.db.Exec(query, follow.Id, follow.UserId, follow.FollowUserId, follow.CreatedAt)
+	return err
+}
+
+func (f *followDao) UnfollowUser(userId, followUserId string) error {
+	query := "DELETE FROM follows WHERE userId = ? AND followUserId = ?"
+	_, err := f.db.Exec(query, userId, followUserId)
 	return err
 }
 

@@ -35,6 +35,20 @@ func (c *FollowUserController) FollowUserHandler(w http.ResponseWriter, r *http.
 	respondJSON(w, http.StatusOK, followUser)
 }
 
+func (c *FollowUserController) UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+	uid, ok := r.Context().Value(userContextKey).(string)
+	if !ok || uid == "" {
+		http.Error(w, "User ID not found in context. This endpoint requires authentication.", http.StatusInternalServerError)
+		return
+	}
+	followUserId := chi.URLParam(r, "userId")
+	if err := c.followUserUsecase.UnfollowUser(uid, followUserId); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"message": "unfollowed successfully"})
+}
+
 func (c *FollowUserController) GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {
@@ -48,6 +62,7 @@ func (c *FollowUserController) GetFollowersHandler(w http.ResponseWriter, r *htt
 	}
 	respondJSON(w, http.StatusOK, followers)
 }
+
 func (c *FollowUserController) GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
 	uid, ok := r.Context().Value(userContextKey).(string)
 	if !ok || uid == "" {

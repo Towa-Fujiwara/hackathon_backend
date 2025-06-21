@@ -112,6 +112,7 @@ func main() {
 		r.Get("/api/posts/{postId}/comments", commentController.GetCommentsHandler)
 		r.Post("/api/posts/{postId}/comments", commentController.CreateCommentHandler)
 		r.Post("/api/users/{userId}/follow", followUserController.FollowUserHandler)
+		r.Delete("/api/users/{userId}/follow", followUserController.UnfollowUserHandler)
 		r.Get("/api/users/{userId}/followers", followUserController.GetFollowersHandler)
 		r.Get("/api/users/{userId}/following", followUserController.GetFollowingHandler)
 		r.Get("/api/users/{userId}/is-following", followUserController.IsFollowingHandler)

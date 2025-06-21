@@ -8,6 +8,7 @@ import (
 
 type FollowUserUsecase interface {
 	FollowUser(follow *model.Follow) (*model.Follow, error)
+	UnfollowUser(userId, followUserId string) error
 	GetFollowers(userId string) ([]model.Follow, error)
 	GetFollowing(userId string) ([]model.Follow, error)
 	IsFollowing(userId, followUserId string) (bool, error)
@@ -28,6 +29,15 @@ func (u *followUserUsecase) FollowUser(follow *model.Follow) (*model.Follow, err
 	}
 	return follow, nil
 }
+
+func (u *followUserUsecase) UnfollowUser(userId, followUserId string) error {
+	if err := u.followUserDao.UnfollowUser(userId, followUserId); err != nil {
+		log.Printf("ERROR: Failed to unfollow user: %v", err)
+		return err
+	}
+	return nil
+}
+
 func (u *followUserUsecase) GetFollowers(userId string) ([]model.Follow, error) {
 	followers, err := u.followUserDao.GetFollowers(userId)
 	if err != nil {
@@ -36,6 +46,7 @@ func (u *followUserUsecase) GetFollowers(userId string) ([]model.Follow, error) 
 	}
 	return followers, nil
 }
+
 func (u *followUserUsecase) GetFollowing(userId string) ([]model.Follow, error) {
 	following, err := u.followUserDao.GetFollowing(userId)
 	if err != nil {
@@ -44,6 +55,7 @@ func (u *followUserUsecase) GetFollowing(userId string) ([]model.Follow, error) 
 	}
 	return following, nil
 }
+
 func (u *followUserUsecase) IsFollowing(userId, followUserId string) (bool, error) {
 	isFollowing, err := u.followUserDao.IsFollowing(userId, followUserId)
 	if err != nil {
