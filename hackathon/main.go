@@ -100,7 +100,7 @@ func main() {
 	r.Get("/api/posts", postController.GetAllPostsHandler)
 	r.Get("/api/posts/{postId}", postController.GetPostHandler)
 	r.Get("/api/users/id/{userId}", searchUserController.GetUserProfileHandler)
-	r.Get("/api/posts/{userId}", postController.GetPostsByUserIdHandler)
+	r.Get("/api/posts/user/{userId}", postController.GetPostsByUserIdHandler)
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
 		r.Post("/api/users", registerUserController.RegisterUserHandler) 
