@@ -105,7 +105,7 @@ func main() {
 		r.Use(firebaseAuthMiddleware)
 		r.Post("/api/users", registerUserController.RegisterUserHandler) 
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
-		 //r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
+		r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
 		r.Post("/api/posts", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)

@@ -11,6 +11,7 @@ type UserDao interface {
 	FindById(id string) (*model.User, error)
 	FindByFirebaseUID(firebaseUID string) (*model.User, error)
 	Create(user *model.User) error
+	Update(user *model.User) error
 	SearchByName(query string) ([]model.User, error)
 }
 
@@ -66,6 +67,19 @@ func (d *userDao) Create(user *model.User) error {
 	return nil
 }
 
+func (d *userDao) Update(user *model.User) error {
+	_, err := d.db.Exec(
+		"UPDATE users SET name = ?, bio = ?, iconUrl = ? WHERE firebaseUid = ?",
+		user.Name,
+		user.Bio,
+		user.IconUrl,
+		user.FirebaseUID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	return nil
+}
 
 func (d *userDao) SearchByName(query string) ([]model.User, error) {
 	query = "%" + query + "%"

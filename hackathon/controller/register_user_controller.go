@@ -50,4 +50,37 @@ func (c *RegisterUserController) RegisterUserHandler(w http.ResponseWriter, r *h
 	respondJSON(w, http.StatusCreated, map[string]string{"userId": row.UserId})
 }
 
+func (c *RegisterUserController) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		log.Printf("fail: HTTP Method is %s\n", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// 認証ミドルウェアからユーザーのUIDを取得
+	userUID, ok := r.Context().Value(userContextKey).(string)
+	if !ok || userUID == "" {
+		log.Printf("fail: user UID not found in context")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var user model.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Printf("fail: json.Decode, %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// ユーザー情報を更新
+	updatedUser, err := c.registerUserUsecase.UpdateUser(userUID, user.Name, user.Bio, user.IconUrl)
+	if err != nil {
+		log.Printf("fail: registerUserUsecase.UpdateUser, %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, updatedUser)
+}
+
 
