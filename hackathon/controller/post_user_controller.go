@@ -67,6 +67,22 @@ func (c *PostController) GetAllPostsByUserIdHandler(w http.ResponseWriter, r *ht
 	respondJSON(w, http.StatusOK, posts)
 }
 
+// 他のユーザーの投稿を取得するハンドラー
+func (c *PostController) GetPostsByUserIdHandler(w http.ResponseWriter, r *http.Request) {
+	userId := chi.URLParam(r, "userId")
+	if userId == "" {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	posts, err := c.postUsecase.FindAllPostsByUserId(userId)
+	if err != nil {
+		log.Printf("ERROR: FindAllPostsByUserId failed: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, posts)
+}
 
 func (c *PostController) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	firebaseUID, ok := r.Context().Value(userContextKey).(string)
