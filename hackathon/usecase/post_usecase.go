@@ -11,6 +11,7 @@ type PostUsecase interface {
 	FindAllPosts() ([]model.Post, error)
 	CreatePost(post *model.Post) (*model.Post, error)
 	FindById(id string) (*model.Post, error)
+	DeletePost(id string) error
 	FindAllPostsByUserId(uid string) ([]model.Post, error)
 }
 
@@ -43,4 +44,8 @@ func (u *postUsecase) CreatePost(post *model.Post) (*model.Post, error) {
 
 func (u *postUsecase) FindById(id string) (*model.Post, error) {
 	return u.postDAO.FindById(id)
+}
+
+func (u *postUsecase) DeletePost(id string) error {
+	return u.postDAO.Delete(id)
 }
