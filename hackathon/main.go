@@ -98,9 +98,10 @@ func main() {
 
 	r.Get("/api/search", searchUserController.SearchUsersHandler)
 	r.Get("/api/posts", postController.GetAllPostsHandler)
+	r.Get("/api/posts/following", postController.GetFollowingPostsHandler)
+	r.Get("/api/posts/user/{userId}", postController.GetPostsByUserIdHandler)
 	r.Get("/api/posts/{postId}", postController.GetPostHandler)
 	r.Get("/api/users/id/{userId}", searchUserController.GetUserProfileHandler)
-	r.Get("/api/posts/user/{userId}", postController.GetPostsByUserIdHandler)
 	r.Get("/api/users/{userId}/follow_counts", followUserController.GetUserFollowCountsHandler)
 	r.Group(func(r chi.Router) {	
 		r.Use(firebaseAuthMiddleware)
@@ -108,7 +109,6 @@ func main() {
 		r.Get("/api/users/me", searchUserController.GetUserProfileHandler)     
 		r.Put("/api/users/me", registerUserController.UpdateUserHandler) 
 		r.Get("/api/posts/me", postController.GetAllPostsByUserIdHandler) 
-		r.Get("/api/posts/following", postController.GetFollowingPostsHandler)
 		r.Post("/api/posts", postController.CreatePostHandler)
 		r.Post("/api/posts/{postId}/like", postLikeController.LikePostHandler)
 		r.Get("/api/posts/{postId}/comments", commentController.GetCommentsHandler)
