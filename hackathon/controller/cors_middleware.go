@@ -13,12 +13,8 @@ func CorsMiddleware(next http.Handler) http.Handler {
             "http://localhost:5173",
             "http://localhost:3000",
 			"https://hackathon-frontend-one-khaki.vercel.app",
-			"https://hackathon-frontend-dusky.vercel.app",
-			"https://hackathon-frontend-cu4r-2fjz7p3tv-tfujis-projects.vercel.app",
-			"https://hackathon-frontend-cu4r.vercel.app",
-			"https://hackathon-frontend-o0ty9vtbr-towa-fujiwaras-projects.vercel.app",
-			"https://hackathon-frontend-cu4r-git-firebase-tfujis-projects.vercel.app",
-			"https://hackathon-frontend-cu4r-9gpda8n3x-tfujis-projects.vercel.app",
+			"https://hackathon-frontend-git-main-towa-fujiwaras-projects.vercel.app",
+            "https://hackathon-frontend-c5khoovz7-towa-fujiwaras-projects.vercel.app",
         }//
         //
         origin := r.Header.Get("Origin")
